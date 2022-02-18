@@ -1,3 +1,5 @@
+#![deny(clippy::all)]
+
 fn main() {
     const TRIALS: u32 = 100;
     let now = std::time::Instant::now();
@@ -9,7 +11,7 @@ fn main() {
     println!(
         "Took {:.2?} to get wigner_3j(5,5,0,1,-1,0) = {} {} times.",
         elapsed,
-        acc / TRIALS as f64,
+        acc / f64::from(TRIALS),
         TRIALS,
     );
     println!(
@@ -24,7 +26,8 @@ fn main() {
 ///quantum numbers belonging to the first three angular momentum quantum numbers.
 fn wigner_3j(j1: i32, j2: i32, j3: i32, m1: i32, m2: i32, m3: i32) -> f64 {
     let sign: f64 = if (j1 - j2 - m3) % 2 == 0 { 1.0 } else { -1.0 };
-    sign * clebsch_gordan_coefficient(j1, j2, j3, m1, m2, -m3) / f64::sqrt(2.0 * (j3 as f64) + 1.0)
+    sign * clebsch_gordan_coefficient(j1, j2, j3, m1, m2, -m3)
+        / f64::sqrt(2.0 * f64::from(j3) + 1.0)
 }
 
 ///Returns the value of the Clebsch-Gordan coefficient for
@@ -38,7 +41,7 @@ fn clebsch_gordan_coefficient(j1: i32, j2: i32, j3: i32, m1: i32, m2: i32, m3: i
     //Original Fortran code says: IMPLICIT REAL*8(A-H,O-Z)
     //=> all variables that begin with A-H or O-Z must be f64
     //This code is simply ported Fortran code,
-    //as such it is not ideomatic rust.
+    //as such it is not idiomatic rust.
     //The type of all the l<1-8> variables have been changed
     //from i32 to u64 and l9 changed to f64 to reduce type casting
 
@@ -73,7 +76,7 @@ fn clebsch_gordan_coefficient(j1: i32, j2: i32, j3: i32, m1: i32, m2: i32, m3: i
     let l6 = (j2 + m2) as u64;
     let l7 = (j3 - m3) as u64;
     let l8 = (j1 + m1) as u64;
-    let l9: f64 = (2 * j3 + 1) as f64;
+    let l9 = f64::from(2 * j3 + 1);
 
     let cc: f64 = f64::sqrt(
         l9 * factorial(l1) / factorial(l2) * factorial(ia1.try_into().unwrap()) * factorial(l3)
@@ -85,12 +88,12 @@ fn clebsch_gordan_coefficient(j1: i32, j2: i32, j3: i32, m1: i32, m2: i32, m3: i
             / factorial(l8),
     );
 
-    let mut ip1: i32 = j2 + j3 + m1 - ni;
-    let b1: f64 = factorial(ip1.try_into().unwrap());
-    let mut ip2: i32 = j1 - m1 + ni;
-    let b2: f64 = factorial(ip2.try_into().unwrap());
+    let mut ip1 = j2 + j3 + m1 - ni;
+    let b1 = factorial(ip1.try_into().unwrap());
+    let mut ip2 = j1 - m1 + ni;
+    let b2 = factorial(ip2.try_into().unwrap());
     ip2 += 1;
-    let d1: f64 = factorial(ni.try_into().unwrap());
+    let d1 = factorial(ni.try_into().unwrap());
     let mut ir1 = ni + 1;
     let mut ir2 = j3 - j1 + j2 - ni;
     let d2 = factorial(ir2.try_into().unwrap());
@@ -103,14 +106,14 @@ fn clebsch_gordan_coefficient(j1: i32, j2: i32, j3: i32, m1: i32, m2: i32, m3: i
     if u32_bit_at((ni + j2 + m2) as u32, 0) {
         fac *= -1.0;
     }
-    let mut s1: f64 = b1 / d2 * b2 / (d1 * d3 * d4) * fac;
+    let mut s1 = b1 / d2 * b2 / (d1 * d3 * d4) * fac;
     let n = nm - ni;
 
     if n != 0 {
         let mut fa = s1;
         for _ in 1..=n {
-            fa =
-                -fa * ip2 as f64 * ir2 as f64 / ip1 as f64 * ir3 as f64 / (ir1 as f64 * ir4 as f64);
+            fa = -fa * f64::from(ip2) * f64::from(ir2) / f64::from(ip1) * f64::from(ir3)
+                / (f64::from(ir1) * f64::from(ir4));
             s1 += fa;
             ip1 -= 1;
             ip2 += 1;
@@ -122,8 +125,8 @@ fn clebsch_gordan_coefficient(j1: i32, j2: i32, j3: i32, m1: i32, m2: i32, m3: i
     }
 
     let res = cc * s1;
-    //guard against floating point errors making a zero result non-zero
     if f64::abs(res) < 1e-14 {
+        //guard against floating point errors making a zero result non-zero
         0.0
     } else {
         res

@@ -187,7 +187,8 @@ mod tests {
 
     #[test]
     fn test_good_3j_input() {
-        //assert_eq!(wigner_3j(1, 1, 0, 0, 0, 0), -0.5773502691896258);//Fails due to floating point errors on the last decimal
+        /*//Fails due to floating point errors on the last decimal
+        assert_eq!(wigner_3j(1, 1, 0, 0, 0, 0), -0.5773502691896258);*/
         assert_eq!(wigner_3j(1, 1, 2, -1, 1, 0), 0.18257418583505536);
         assert_eq!(wigner_3j(1, 2, 3, 1, 2, -3), 0.3779644730092272);
     }

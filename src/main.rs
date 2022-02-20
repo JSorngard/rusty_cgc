@@ -20,8 +20,8 @@ fn main() {
     let elapsed = start_time.elapsed();
     let num_symbols = i32::pow(MAXJ * (2 * MAXJ + 1), 3) as u32;
     println!(
-        "Took {:.2?} to compute all {} 3j-symbols with js of at most 5. Their sum is {}",
-        elapsed, num_symbols, acc,
+        "Took {:.2?} to compute all {} 3j-symbols with js of at most {}. Their sum is {}",
+        elapsed, num_symbols, MAXJ, acc,
     );
     println!(
         "This gives an average speed of {:.2?} per function call",
@@ -76,13 +76,14 @@ fn clebsch_gordan_coefficient(j1: i32, j2: i32, j3: i32, m1: i32, m2: i32, m3: i
     let nm = if ia2 <= ia1 { ia2 } else { ia1 };
 
     let cc = f64::sqrt(
-        f64::from(2 * j3 + 1) * factorial((j3 + j1 - j2) as u64)
-            / factorial((j1 + j2 + j3 + 1) as u64)
-            * factorial(ia1.try_into().unwrap())
+        //All inputs to the factorials will be >= 0, so casting to u64 loses no sign information
+        f64::from(2 * j3 + 1) * (factorial((j3 + j1 - j2) as u64)
+            / factorial((j1 + j2 + j3 + 1) as u64))
+            * factorial(ia1 as u64)
             * factorial((j1 + j2 - j3) as u64)
             / factorial((j1 - m1) as u64)
             / factorial((j2 - m2) as u64)
-            * factorial(ia2.try_into().unwrap())
+            * factorial(ia2 as u64)
             / factorial((j2 + m2) as u64)
             * factorial((j3 - m3) as u64)
             / factorial((j1 + m1) as u64),
@@ -94,16 +95,12 @@ fn clebsch_gordan_coefficient(j1: i32, j2: i32, j3: i32, m1: i32, m2: i32, m3: i
     let mut ir2 = j3 - j1 + j2 - ni;
     let mut ir3 = j3 + m3 - ni;
     let mut ir4 = j1 - j2 - m3 + ni + 1;
-    let sign: f64 = if (ni + j2 + m2) % 2 == 1 { -1.0 } else { 1.0 };
-    let mut s1 = factorial(ip1.try_into().unwrap()) / factorial(ir2.try_into().unwrap())
-        * factorial((ip2 - 1).try_into().unwrap())
-        / (factorial(ni.try_into().unwrap())
-            * factorial(ir3.try_into().unwrap())
-            * factorial((ir4 - 1).try_into().unwrap()))
-        * sign;
+    //Same here: all inputs to the factorials will be >= 0, so casting to u64 loses no sign information
+    let mut s1 = factorial(ip1 as u64) / factorial(ir2 as u64) * factorial((ip2 - 1) as u64)
+        / (factorial(ni as u64) * factorial(ir3 as u64) * factorial((ir4 - 1) as u64))
+        * if (ni + j2 + m2) % 2 == 1 { -1.0 } else { 1.0 };
     let n = nm - ni;
     let mut fa;
-
     if n != 0 {
         fa = s1;
         for _ in 1..=n {
@@ -130,10 +127,15 @@ fn clebsch_gordan_coefficient(j1: i32, j2: i32, j3: i32, m1: i32, m2: i32, m3: i
 
 ///Returns the factorial of the input integer as a float
 fn factorial(n: u64) -> f64 {
-    (match n {
-        0 => 1,
-        1.. => (1..=n).product(),
-    }) as f64
+    if n == 0 {
+        1.0
+    } else {
+        let mut res = 1.0;
+        for i in 1..=n {
+            res *= i as f64;
+        }
+        res
+    }
 }
 
 #[cfg(test)]
@@ -180,5 +182,25 @@ mod tests {
         assert_eq!(wigner_3j(1, 1, 0, 0, 0, 0), -0.5773502691896258);*/
         assert_eq!(wigner_3j(1, 1, 2, -1, 1, 0), 0.18257418583505536);
         assert_eq!(wigner_3j(1, 2, 3, 1, 2, -3), 0.3779644730092272);
+    }
+
+    #[test]
+    fn test_sum_of_many_3j() {
+        const MAXJ: i32 = 10;
+        let mut acc: f64 = 0.0;
+        for j1 in 0..=MAXJ {
+            for m1 in -j1..=j1 {
+                for j2 in 0..=MAXJ {
+                    for m2 in -j2..=j2 {
+                        for j3 in 0..=MAXJ {
+                            for m3 in -j3..=j3 {
+                                acc += wigner_3j(j1, j2, j3, m1, m2, m3);
+                            }
+                        }
+                    }
+                }
+            }
+        }
+        assert_eq!(acc, 48.03155288822479);
     }
 }

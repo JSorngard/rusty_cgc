@@ -64,7 +64,8 @@ fn clebsch_gordan_coefficient(j1: i32, j2: i32, j3: i32, m1: i32, m2: i32, m3: i
         return 0.0;
     }
 
-    if i32::abs(m1) + i32::abs(m2) == 0 && u32_bit_at((j1 + j2 + j3) as u32, 0) {
+    if i32::abs(m1) + i32::abs(m2) == 0 && (j1 + j2 + j3) % 2 == 1 {
+        //u32_bit_at((j1 + j2 + j3) as u32, 0)
         return 0.0;
     }
 
@@ -94,7 +95,8 @@ fn clebsch_gordan_coefficient(j1: i32, j2: i32, j3: i32, m1: i32, m2: i32, m3: i
     let mut ir2 = j3 - j1 + j2 - ni;
     let mut ir3 = j3 + m3 - ni;
     let mut ir4 = j1 - j2 - m3 + ni + 1;
-    let sign: f64 = if u32_bit_at((ni + j2 + m2) as u32, 0) {
+    let sign: f64 = if (ni + j2 + m2) % 2 == 1 {
+        //u32_bit_at((ni + j2 + m2) as u32, 0) {
         -1.0
     } else {
         1.0
@@ -132,14 +134,14 @@ fn clebsch_gordan_coefficient(j1: i32, j2: i32, j3: i32, m1: i32, m2: i32, m3: i
     }
 }
 
-///Gets the bit at position n. Bits are numbered from 0 (least significant) to 31 (most significant).
-fn u32_bit_at(input: u32, n: u8) -> bool {
-    if n < 32 {
-        input & (1 << n) != 0
-    } else {
-        false
-    }
-}
+// ///Gets the bit at position n. Bits are numbered from 0 (least significant) to 31 (most significant).
+// fn u32_bit_at(input: u32, n: u8) -> bool {
+//     if n < 32 {
+//         input & (1 << n) != 0
+//     } else {
+//         false
+//     }
+// }
 
 ///Returns the factorial of the input integer as a float
 fn factorial(n: u64) -> f64 {

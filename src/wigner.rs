@@ -101,7 +101,7 @@ fn factorial(n: u64) -> f64 {
         1.0
     } else {
         let mut res = 1.0;
-        for i in 1..=n {
+        for i in 2..=n {
             res *= i as f64;
         }
         res

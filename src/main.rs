@@ -51,8 +51,6 @@ fn clebsch_gordan_coefficient(j1: i32, j2: i32, j3: i32, m1: i32, m2: i32, m3: i
     //=> all variables that begin with A-H or O-Z must be f64
     //This code is simply ported Fortran code,
     //as such it is not idiomatic rust.
-    //The type of all the l<1-8> variables have been changed
-    //from i32 to u64 and l9 changed to f64 to reduce type casting
 
     if m3 != m1 + m2 {
         return 0.0;
@@ -77,45 +75,36 @@ fn clebsch_gordan_coefficient(j1: i32, j2: i32, j3: i32, m1: i32, m2: i32, m3: i
     let ni = if ia3 > 0 { ia3 } else { 0 };
     let nm = if ia2 <= ia1 { ia2 } else { ia1 };
 
-    let l1 = (j3 + j1 - j2) as u64;
-    let l2 = (j1 + j2 + j3 + 1) as u64;
-    let l3 = (j1 + j2 - j3) as u64;
-    let l4 = (j1 - m1) as u64;
-    let l5 = (j2 - m2) as u64;
-    let l6 = (j2 + m2) as u64;
-    let l7 = (j3 - m3) as u64;
-    let l8 = (j1 + m1) as u64;
-    let l9 = f64::from(2 * j3 + 1);
-
     let cc = f64::sqrt(
-        l9 * factorial(l1) / factorial(l2) * factorial(ia1.try_into().unwrap()) * factorial(l3)
-            / factorial(l4)
-            / factorial(l5)
+        f64::from(2 * j3 + 1) * factorial((j3 + j1 - j2) as u64)
+            / factorial((j1 + j2 + j3 + 1) as u64)
+            * factorial(ia1.try_into().unwrap())
+            * factorial((j1 + j2 - j3) as u64)
+            / factorial((j1 - m1) as u64)
+            / factorial((j2 - m2) as u64)
             * factorial(ia2.try_into().unwrap())
-            / factorial(l6)
-            * factorial(l7)
-            / factorial(l8),
+            / factorial((j2 + m2) as u64)
+            * factorial((j3 - m3) as u64)
+            / factorial((j1 + m1) as u64),
     );
 
     let mut ip1 = j2 + j3 + m1 - ni;
-    let b1 = factorial(ip1.try_into().unwrap());
-    let mut ip2 = j1 - m1 + ni;
-    let b2 = factorial(ip2.try_into().unwrap());
-    ip2 += 1;
-    let d1 = factorial(ni.try_into().unwrap());
+    let mut ip2 = j1 - m1 + ni + 1;
     let mut ir1 = ni + 1;
     let mut ir2 = j3 - j1 + j2 - ni;
-    let d2 = factorial(ir2.try_into().unwrap());
     let mut ir3 = j3 + m3 - ni;
-    let d3 = factorial(ir3.try_into().unwrap());
-    let mut ir4 = j1 - j2 - m3 + ni;
-    let d4 = factorial(ir4.try_into().unwrap());
-    ir4 += 1;
-    let mut fac: f64 = 1.0;
-    if u32_bit_at((ni + j2 + m2) as u32, 0) {
-        fac *= -1.0;
-    }
-    let mut s1 = b1 / d2 * b2 / (d1 * d3 * d4) * fac;
+    let mut ir4 = j1 - j2 - m3 + ni + 1;
+    let sign: f64 = if u32_bit_at((ni + j2 + m2) as u32, 0) {
+        -1.0
+    } else {
+        1.0
+    };
+    let mut s1 = factorial(ip1.try_into().unwrap()) / factorial(ir2.try_into().unwrap())
+        * factorial((ip2 - 1).try_into().unwrap())
+        / (factorial(ni.try_into().unwrap())
+            * factorial(ir3.try_into().unwrap())
+            * factorial((ir4 - 1).try_into().unwrap()))
+        * sign;
     let n = nm - ni;
     let mut fa;
 

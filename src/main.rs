@@ -12,9 +12,7 @@ fn main() {
             for j2 in 0..=MAXJ {
                 for m2 in -j2..=j2 {
                     for j3 in 0..=MAXJ {
-                        for m3 in -j3..=j3 {
-                            acc += wigner_3j(j1, j2, j3, m1, m2, m3);
-                        }
+                            acc += wigner_3j(j1, j2, j3, m1, m2, -m1-m2);
                     }
                 }
             }
@@ -88,9 +86,7 @@ mod tests {
                 for j2 in 0..=MAXJ {
                     for m2 in -j2..=j2 {
                         for j3 in 0..=MAXJ {
-                            for m3 in -j3..=j3 {
-                                acc += wigner_3j(j1, j2, j3, m1, m2, m3);
-                            }
+                                acc += wigner_3j(j1, j2, j3, m1, m2, -m1-m2);
                         }
                     }
                 }

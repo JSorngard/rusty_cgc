@@ -1,22 +1,32 @@
 #![deny(clippy::all)]
 
 fn main() {
-    const TRIALS: u32 = 100;
+    const MAXJ: i32 = 5;
     let start_time = std::time::Instant::now();
     let mut acc: f64 = 0.0;
-    for _ in 0..TRIALS {
-        acc += wigner_3j(5, 5, 0, 1, -1, 0);
+    for j1 in 0..=MAXJ {
+        for m1 in -j1..=j1 {
+            for j2 in 0..=MAXJ {
+                for m2 in -j2..=j2 {
+                    for j3 in 0..=MAXJ {
+                        for m3 in -j3..=j3 {
+                            acc += wigner_3j(j1, j2, j3, m1, m2, m3);
+                        }
+                    }
+                }
+            }
+        }
     }
     let elapsed = start_time.elapsed();
+    let num_symbols =
+        (MAXJ * (2 * MAXJ + 1) * MAXJ * (2 * MAXJ + 1) * MAXJ * (2 * MAXJ + 1)) as u32;
     println!(
-        "Took {:.2?} to get wigner_3j(5,5,0,1,-1,0) = {} {} times.",
-        elapsed,
-        acc / f64::from(TRIALS),
-        TRIALS,
+        "Took {:.2?} to compute all {} possible 3j-symbols with js of at most 5. Their sum is {}",
+        elapsed, num_symbols, acc,
     );
     println!(
-        "This given an average speed of {:.2?} per function call",
-        elapsed / TRIALS
+        "This gives an average speed of {:.2?} per function call",
+        elapsed / num_symbols
     );
 }
 

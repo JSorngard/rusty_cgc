@@ -61,12 +61,12 @@ fn clebsch_gordan_coefficient(j1: i32, j2: i32, j3: i32, m1: i32, m2: i32, m3: i
         return 0.0;
     }
 
-    let ia1: i32 = j3 + j2 - j1;
-    let ia2: i32 = j3 + m3;
-    let ia3: i32 = j2 + m3 - j1;
+    let ia1 = j3 + j2 - j1;
+    let ia2 = j3 + m3;
+    let ia3 = j2 + m3 - j1;
 
-    let ni: i32 = if ia3 > 0 { ia3 } else { 0 };
-    let nm: i32 = if ia2 <= ia1 { ia2 } else { ia1 };
+    let ni = if ia3 > 0 { ia3 } else { 0 };
+    let nm = if ia2 <= ia1 { ia2 } else { ia1 };
 
     let l1 = (j3 + j1 - j2) as u64;
     let l2 = (j1 + j2 + j3 + 1) as u64;
@@ -108,9 +108,10 @@ fn clebsch_gordan_coefficient(j1: i32, j2: i32, j3: i32, m1: i32, m2: i32, m3: i
     }
     let mut s1 = b1 / d2 * b2 / (d1 * d3 * d4) * fac;
     let n = nm - ni;
+    let mut fa;
 
     if n != 0 {
-        let mut fa = s1;
+        fa = s1;
         for _ in 1..=n {
             fa = -fa * f64::from(ip2) * f64::from(ir2) / f64::from(ip1) * f64::from(ir3)
                 / (f64::from(ir1) * f64::from(ir4));

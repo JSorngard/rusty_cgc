@@ -2,12 +2,12 @@
 
 fn main() {
     const TRIALS: u32 = 100;
-    let now = std::time::Instant::now();
+    let start_time = std::time::Instant::now();
     let mut acc: f64 = 0.0;
     for _ in 0..TRIALS {
         acc += wigner_3j(5, 5, 0, 1, -1, 0);
     }
-    let elapsed = now.elapsed();
+    let elapsed = start_time.elapsed();
     println!(
         "Took {:.2?} to get wigner_3j(5,5,0,1,-1,0) = {} {} times.",
         elapsed,

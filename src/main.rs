@@ -87,7 +87,7 @@ fn clebsch_gordan_coefficient(j1: i32, j2: i32, j3: i32, m1: i32, m2: i32, m3: i
     let l8 = (j1 + m1) as u64;
     let l9 = f64::from(2 * j3 + 1);
 
-    let cc: f64 = f64::sqrt(
+    let cc = f64::sqrt(
         l9 * factorial(l1) / factorial(l2) * factorial(ia1.try_into().unwrap()) * factorial(l3)
             / factorial(l4)
             / factorial(l5)

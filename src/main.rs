@@ -20,7 +20,7 @@ fn main() {
     let elapsed = start_time.elapsed();
     let num_symbols = i32::pow(MAXJ * (2 * MAXJ + 1), 3) as u32;
     println!(
-        "Took {:.2?} to compute all {} possible 3j-symbols with js of at most 5. Their sum is {}",
+        "Took {:.2?} to compute all {} 3j-symbols with js of at most 5. Their sum is {}",
         elapsed, num_symbols, acc,
     );
     println!(

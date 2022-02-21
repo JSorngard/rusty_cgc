@@ -1,4 +1,3 @@
-#![deny(clippy::all)]
 ///Returns the value of the Wigner 3j symbol for the given integer inputs.
 ///Returns 0.0 if the arguments are invalid. The first three inputs are the
 ///angular momentum quantum numbers, while the last three are the magnetic

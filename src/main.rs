@@ -1,5 +1,3 @@
-#![deny(clippy::all)]
-
 use crate::wigner::wigner_3j;
 mod wigner;
 

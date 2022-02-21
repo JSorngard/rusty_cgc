@@ -4,15 +4,15 @@ use crate::wigner::wigner_3j;
 mod wigner;
 
 fn main() {
-    const MAXJ: i32 = 5;
+    const MAXJ: i32 = 10;
     let start_time = std::time::Instant::now();
     let mut acc: f64 = 0.0;
     for j1 in 0..=MAXJ {
-        for m1 in -j1..=j1 {
-            for j2 in 0..=MAXJ {
-                for m2 in -j2..=j2 {
-                    for j3 in i32::abs(j1-j2)..=MAXJ {
-                            acc += wigner_3j(j1, j2, j3, m1, m2, -m1-m2);
+        for j2 in 0..=MAXJ {
+            for j3 in i32::abs(j1 - j2)..=j1 + j2 {
+                for m1 in -j1..=j1 {
+                    for m2 in -j2..=j2 {
+                        acc += wigner_3j(j1, j2, j3, m1, m2, -m1 - m2);
                     }
                 }
             }
@@ -21,7 +21,7 @@ fn main() {
     let elapsed = start_time.elapsed();
     let num_symbols = i32::pow(MAXJ * (2 * MAXJ + 1), 3) as u32;
     println!(
-        "Took {:.2?} to compute all {} 3j-symbols with js of at most {}. Their sum is {}",
+        "Took {:.2?} to compute all {} 3j-symbols with j1 and j2 of at most {}. Their sum is {}",
         elapsed, num_symbols, MAXJ, acc,
     );
     println!(
@@ -82,16 +82,16 @@ mod tests {
         const MAXJ: i32 = 10;
         let mut acc: f64 = 0.0;
         for j1 in 0..=MAXJ {
-            for m1 in -j1..=j1 {
-                for j2 in 0..=MAXJ {
-                    for m2 in -j2..=j2 {
-                        for j3 in i32::abs(j1-j2)..=MAXJ {
-                                acc += wigner_3j(j1, j2, j3, m1, m2, -m1-m2);
+            for j2 in 0..=MAXJ {
+                for j3 in i32::abs(j1 - j2)..=j1 + j2 {
+                    for m1 in -j1..=j1 {
+                        for m2 in -j2..=j2 {
+                            acc += wigner_3j(j1, j2, j3, m1, m2, -m1 - m2);
                         }
                     }
                 }
             }
         }
-        assert_eq!(acc, 48.03155288822479);
+        assert_eq!(acc, 57.842446365287685);
     }
 }

@@ -47,8 +47,8 @@ pub fn clebsch_gordan_coefficient(j1: i32, j2: i32, j3: i32, m1: i32, m2: i32, m
 
     let cc = f64::sqrt(
         //All inputs to the factorials will be >= 0, so casting to u64 loses no sign information
-        f64::from(2 * j3 + 1) * (factorial((j3 + j1 - j2) as u64)
-            / factorial((j1 + j2 + j3 + 1) as u64))
+        f64::from(2 * j3 + 1) * factorial((j3 + j1 - j2) as u64)
+            / factorial((j1 + j2 + j3 + 1) as u64)
             * factorial(ia1 as u64)
             * factorial((j1 + j2 - j3) as u64)
             / factorial((j1 - m1) as u64)
@@ -67,8 +67,10 @@ pub fn clebsch_gordan_coefficient(j1: i32, j2: i32, j3: i32, m1: i32, m2: i32, m
     let mut ir4 = j1 - j2 - m3 + ni + 1;
     //Same here: all inputs to the factorials will be >= 0, so casting to u64 loses no sign information
     let mut s1 = factorial(ip1 as u64) / factorial(ir2 as u64) * factorial((ip2 - 1) as u64)
-        / (factorial(ni as u64) * factorial(ir3 as u64) * factorial((ir4 - 1) as u64))
-        * if (ni + j2 + m2) % 2 == 1 { -1.0 } else { 1.0 };
+        / (factorial(ni as u64) * factorial(ir3 as u64) * factorial((ir4 - 1) as u64));
+    if (ni + j2 + m2) % 2 == 1 {
+        s1 = -s1;
+    }
     let n = nm - ni;
     let mut fa;
     if n != 0 {

@@ -53,11 +53,10 @@ mod tests {
             clebsch_gordan_coefficient(1, 2, 1, 1, -1, 0),
             0.5477225575051661
         );
-        /*//Fails on the last decimal due to floating point errors
         assert_eq!(
-            clebsch_gordan_coefficient(1, 1, 0, 1, -1),
-            0.5773502691896258//last digit of _8... has been rounded up from _76..
-        );*/
+            clebsch_gordan_coefficient(1, 1, 0, 1, -1, 0),
+            0.5773502691896257
+        );
         assert_eq!(clebsch_gordan_coefficient(1, 2, 3, 1, 2, 3), 1.0);
     }
 
@@ -71,10 +70,10 @@ mod tests {
 
     #[test]
     fn test_good_3j_input() {
-        /*//Fails due to floating point errors on the last decimal
-        assert_eq!(wigner_3j(1, 1, 0, 0, 0, 0), -0.5773502691896258);*/
+        assert_eq!(wigner_3j(1, 1, 0, 0, 0, 0), -0.5773502691896257);
         assert_eq!(wigner_3j(1, 1, 2, -1, 1, 0), 0.18257418583505536);
         assert_eq!(wigner_3j(1, 2, 3, 1, 2, -3), 0.3779644730092272);
+        assert_eq!(wigner_3j(10, 10, 9, 5, 4, -9), 0.09825449077444699);
     }
 
     #[test]

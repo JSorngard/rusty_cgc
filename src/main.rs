@@ -31,31 +31,22 @@ fn main() {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::wigner::clebsch_gordan_coefficient;
+    use crate::wigner::clebsch_gordan;
 
     #[test]
     fn test_bad_cgc_input() {
-        assert_eq!(clebsch_gordan_coefficient(1, 1, 0, 1, 1, 0), 0.0); //m3 != m1 + m2
-        assert_eq!(clebsch_gordan_coefficient(1, 2, 0, 0, 0, 0), 0.0); //|m1| > j1
-        assert_eq!(clebsch_gordan_coefficient(2, 2, 5, 0, -1, -1), 0.0); //non-triangular
-        assert_eq!(clebsch_gordan_coefficient(1, 1, 1, 0, 0, 0), 0.0); //all ms 0 => j3 must be even
+        assert_eq!(clebsch_gordan(1, 1, 0, 1, 1, 0), 0.0); //m3 != m1 + m2
+        assert_eq!(clebsch_gordan(1, 2, 0, 0, 0, 0), 0.0); //|m1| > j1
+        assert_eq!(clebsch_gordan(2, 2, 5, 0, -1, -1), 0.0); //non-triangular
+        assert_eq!(clebsch_gordan(1, 1, 1, 0, 0, 0), 0.0); //all ms 0 => j3 must be even
     }
 
     #[test]
     fn test_good_cgc_input() {
-        assert_eq!(
-            clebsch_gordan_coefficient(5, 5, 0, 1, -1, 0),
-            0.30151134457776363
-        );
-        assert_eq!(
-            clebsch_gordan_coefficient(1, 2, 1, 1, -1, 0),
-            0.5477225575051661
-        );
-        assert_eq!(
-            clebsch_gordan_coefficient(1, 1, 0, 1, -1, 0),
-            0.5773502691896257
-        );
-        assert_eq!(clebsch_gordan_coefficient(1, 2, 3, 1, 2, 3), 1.0);
+        assert_eq!(clebsch_gordan(5, 5, 0, 1, -1, 0), 0.30151134457776363);
+        assert_eq!(clebsch_gordan(1, 2, 1, 1, -1, 0), 0.5477225575051661);
+        assert_eq!(clebsch_gordan(1, 1, 0, 1, -1, 0), 0.5773502691896257);
+        assert_eq!(clebsch_gordan(1, 2, 3, 1, 2, 3), 1.0);
     }
 
     #[test]

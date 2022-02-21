@@ -4,8 +4,7 @@
 ///quantum numbers belonging to the first three angular momentum quantum numbers.
 pub fn wigner_3j(j1: i32, j2: i32, j3: i32, m1: i32, m2: i32, m3: i32) -> f64 {
     let sign: f64 = if (j1 - j2 - m3) % 2 == 0 { 1.0 } else { -1.0 };
-    sign * clebsch_gordan_coefficient(j1, j2, j3, m1, m2, -m3)
-        / f64::sqrt(2.0 * f64::from(j3) + 1.0)
+    sign * clebsch_gordan(j1, j2, j3, m1, m2, -m3) / f64::sqrt(2.0 * f64::from(j3) + 1.0)
 }
 
 ///Returns the value of the Clebsch-Gordan coefficient for
@@ -13,7 +12,7 @@ pub fn wigner_3j(j1: i32, j2: i32, j3: i32, m1: i32, m2: i32, m3: i32) -> f64 {
 ///The first three inputs are the angular momentum quantum numbers,
 ///while the last three are the magnetic quantum numbers belonging to the first
 ///three angular momentum quantum numbers.
-pub fn clebsch_gordan_coefficient(j1: i32, j2: i32, j3: i32, m1: i32, m2: i32, m3: i32) -> f64 {
+pub fn clebsch_gordan(j1: i32, j2: i32, j3: i32, m1: i32, m2: i32, m3: i32) -> f64 {
     //Normal Fortran rules: variables beginning with
     //i,j,...,n are i32 and everything else is f32
     //Original Fortran code says: IMPLICIT REAL*8(A-H,O-Z)

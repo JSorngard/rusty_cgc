@@ -7,6 +7,53 @@ pub fn wigner_3j(j1: i32, j2: i32, j3: i32, m1: i32, m2: i32, m3: i32) -> f64 {
     sign * clebsch_gordan(j1, j2, j3, m1, m2, -m3) / f64::sqrt(2.0 * f64::from(j3) + 1.0)
 }
 
+pub fn wigner_6j(j1: i32, j2: i32, j3: i32, j4: i32, j5: i32, j6: i32) -> f64 {
+    if j4 < 0 {
+        return 0.0;
+    }
+    if i32::abs(j5 - j3) > j4 || i32::abs(j6 - j2) > j4 {
+        return 0.0;
+    }
+
+    let fac = delta(j2, j4, j6) * delta(j2, j1, j3) / factorial((j2 + j4 - j6).try_into().unwrap())
+        * delta(j6, j5, j1)
+        / factorial((j6 - j5 + j1).try_into().unwrap())
+        * factorial((j2 + j4 + j6 + 1).try_into().unwrap())
+        / factorial((j6 + j5 - j1).try_into().unwrap())
+        * delta(j4, j5, j3)
+        / factorial((j2 - j1 + j3).try_into().unwrap())
+        * factorial((j4 + j5 + j3 + 1).try_into().unwrap())
+        / factorial((-j2 + j1 + j3).try_into().unwrap())
+        / factorial((j4 + j6 - j3).try_into().unwrap())
+        * if (j4 + j6 + j1 + j3) % 2 == 1 {
+            -1.0
+        } else {
+            1.0
+        };
+    let mut sum: f64 = 0.0;
+    for z in 0..=i32::min(i32::min(2 * j4, -j2 + j4 + j6), j4 - j5 + j3) {
+        sum += factorial((2 * j4 - z).try_into().unwrap())
+            * factorial((j4 + j6 - j1 + j3 - z).try_into().unwrap())
+            * factorial((j4 + j6 + j1 + j3 + 1 - z).try_into().unwrap())
+            / factorial(z.try_into().unwrap())
+            / factorial((-j2 + j4 + j6 - z).try_into().unwrap())
+            / factorial((j4 - j5 + j3 - z).try_into().unwrap())
+            / factorial((j2 + j4 + j6 + 1 - z).try_into().unwrap())
+            / factorial((j4 + j5 + j3 + 1 - z).try_into().unwrap())
+            * if z % 2 == 1 { -1.0 } else { 1.0 };
+    }
+    sum * fac
+}
+
+fn delta(a: i32, b: i32, c: i32) -> f64 {
+    f64::sqrt(
+        factorial((a + c - b).try_into().unwrap())
+            * factorial((a - c + b).try_into().unwrap())
+            * factorial((-a + c + b).try_into().unwrap())
+            / factorial((a + c + b + 1).try_into().unwrap()),
+    )
+}
+
 ///Returns the value of the Clebsch-Gordan coefficient for
 ///the given integer inputs. Returns 0.0 if the arguments are invalid.
 ///The first three inputs are the angular momentum quantum numbers,

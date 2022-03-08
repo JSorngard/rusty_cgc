@@ -11,7 +11,12 @@ pub fn wigner_6j(j1: i32, j2: i32, j3: i32, j4: i32, j5: i32, j6: i32) -> f64 {
     if j4 < 0 {
         return 0.0;
     }
-    if i32::abs(j5 - j3) > j4 || i32::abs(j6 - j2) > j4 {
+
+    if !is_triad(j1, j2, j3)
+        || !is_triad(j1, j5, j6)
+        || !is_triad(j4, j2, j6)
+        || !is_triad(j4, j5, j3)
+    {
         return 0.0;
     }
 
@@ -45,12 +50,120 @@ pub fn wigner_6j(j1: i32, j2: i32, j3: i32, j4: i32, j5: i32, j6: i32) -> f64 {
     sum * fac
 }
 
+pub fn wigner_9j(
+    j11: i32,
+    j21: i32,
+    j31: i32,
+    j12: i32,
+    j22: i32,
+    j32: i32,
+    j13: i32,
+    j23: i32,
+    j33: i32,
+) -> f64 {
+    //Check that all rows are triads
+    if !is_triad(j11, j21, j31) || !is_triad(j12, j22, j32) || !is_triad(j13, j23, j33) {
+        return 0.0;
+    }
+
+    //Check that all columns are triads
+    if !is_triad(j11, j12, j13) || !is_triad(j21, j22, j23) || !is_triad(j31, j32, j33) {
+        return 0.0;
+    }
+
+    let prefactor = if (j13 + j23 - j33) % 2 == 1 {
+        -1.0
+    } else {
+        1.0
+    } * nabla(j21, j11, j31)
+        / nabla(j21, j22, j23)
+        * nabla(j12, j22, j32)
+        / nabla(j12, j11, j13)
+        * nabla(j33, j31, j32)
+        / nabla(j33, j13, j23);
+    let mut sum: f64 = 0.0;
+    for x in 0..=i32::min(i32::min(2 * j33, j22 - j21 + j23), j13 + j23 - j33) {
+        for y in 0..=j31 - j32 + j33 {
+            for z in i32::max(j11 - j12 - j13, 0)..=(j11 - j12 + j13) {
+                if -j11 + j12 + j33 - j23 + x + z < 0 {
+                    continue;
+                }
+                // let numerator: f64 = vec![
+                //     2 * j23 - x,
+                //     j21 + j22 - j23 + x,
+                //     j13 - j23 + j33 + x,
+                //     j22 - j12 + j32 + y,
+                //     j31 + j32 - j33 + y,
+                //     j11 + j21 - j32 + j33 - y - z,
+                //     2 * j11 - z,
+                //     j12 - j11 + j13 + z,
+                // ]
+                // .into_iter()
+                // .map(|x| factorial(x.try_into().unwrap()))
+                // .product();
+                // let denominator: f64 = vec![
+                //     x,
+                //     j22 - j21 + j23 - x,
+                //     j13 + j23 - j33 - x,
+                //     j21 - j12 + j32 - j23 + x + y,
+                //     j12 - j11 - j23 + j33 + x + z,
+                //     y,
+                //     j12 + j22 - j32 - y,
+                //     j31 - j32 + j33 - y,
+                //     2 * j32 + 1 + y,
+                //     z,
+                //     j11 + j21 - j31 - z,
+                //     j11 - j12 + j13 - z,
+                //     j11 + j21 + j31 + 1 - z,
+                // ]
+                // .into_iter()
+                // .map(|x| factorial(x.try_into().unwrap()))
+                // .product();
+                // sum += if (x + y + z) % 2 == 1 { -1.0 } else { 1.0 } * numerator / denominator
+                println!("x={}, y={}, z={}", x, y, z);
+                println!("gives j11 + j21 - j31 - z = {}", j11 + j21 - j31 - z);
+
+                sum += if (x + y + z) % 2 == 1 { -1.0 } else { 1.0 }
+                    * factorial((2 * j23 - x).try_into().unwrap())
+                    / factorial(x.try_into().unwrap())
+                    / factorial((j22 - j21 + j23 - x).try_into().unwrap())
+                    * factorial((j21 + j22 - j23 + x).try_into().unwrap())
+                    / factorial((j13 + j23 - j33 - x).try_into().unwrap())
+                    / factorial((j21 - j12 + j32 - j23 + x + y).try_into().unwrap())
+                    * factorial((j13 - j23 + j33 + x).try_into().unwrap())
+                    / factorial((j12 - j11 - j23 + j33 + x + z).try_into().unwrap())
+                    / factorial(y.try_into().unwrap())
+                    * factorial((j22 - j12 + j32 + y).try_into().unwrap())
+                    / factorial((j12 + j22 - j32 - y).try_into().unwrap())
+                    * factorial((j31 + j32 - j33 + y).try_into().unwrap())
+                    / factorial((j31 - j32 + j33 - y).try_into().unwrap())
+                    / factorial((2 * j32 + 1 + y).try_into().unwrap())
+                    * factorial((j11 + j21 - j32 + j33 - y - z).try_into().unwrap())
+                    / factorial(z.try_into().unwrap())
+                    / factorial((j11 + j21 - j31 - z).try_into().unwrap())
+                    * factorial((2 * j11 - z).try_into().unwrap())
+                    / factorial((j11 - j12 + j13 - z).try_into().unwrap())
+                    * factorial((j12 - j11 + j13 + z).try_into().unwrap())
+                    / factorial((j11 + j21 + j31 + 1 - z).try_into().unwrap());
+            }
+        }
+    }
+    prefactor * sum
+}
+
 fn delta(a: i32, b: i32, c: i32) -> f64 {
     f64::sqrt(
-        factorial((a + c - b).try_into().unwrap())
-            * factorial((a - c + b).try_into().unwrap())
-            * factorial((-a + c + b).try_into().unwrap())
-            / factorial((a + c + b + 1).try_into().unwrap()),
+        factorial((a + c - b).try_into().unwrap()) * factorial((a - c + b).try_into().unwrap())
+            / factorial((a + c + b + 1).try_into().unwrap())
+            * factorial((-a + c + b).try_into().unwrap()),
+    )
+}
+
+fn nabla(a: i32, b: i32, c: i32) -> f64 {
+    f64::sqrt(
+        factorial((a - b + c).try_into().unwrap()) * factorial((a + b - c).try_into().unwrap())
+            / factorial((b + c - a).try_into().unwrap())
+            * factorial((a + b + c + 1).try_into().unwrap()),
     )
 }
 
@@ -75,7 +188,7 @@ pub fn clebsch_gordan(j1: i32, j2: i32, j3: i32, m1: i32, m2: i32, m3: i32) -> f
         return 0.0;
     }
 
-    if j3 > (j1 + j2) || j3 < i32::abs(j1 - j2) {
+    if !is_triad(j1, j2, j3) {
         return 0.0;
     }
 
@@ -140,6 +253,11 @@ pub fn clebsch_gordan(j1: i32, j2: i32, j3: i32, m1: i32, m2: i32, m3: i32) -> f
     } else {
         res
     }
+}
+
+///Returns whether the given triplet of angular momenta form a triad
+fn is_triad(j1: i32, j2: i32, j3: i32) -> bool {
+    j3 >= i32::abs(j1 - j2) && j3 <= j1 + j2 // && (j1 + j1 + j3).fract() == 0.0
 }
 
 ///Returns the factorial of the input integer as a float

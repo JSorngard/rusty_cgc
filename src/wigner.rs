@@ -24,7 +24,7 @@ pub fn wigner_6j(j1: i32, j2: i32, j3: i32, j4: i32, j5: i32, j6: i32) -> f64 {
         / factorial((j2 - j1 + j3).try_into().unwrap())
         * factorial((j4 + j5 + j3 + 1).try_into().unwrap())
         / factorial((-j2 + j1 + j3).try_into().unwrap())
-        / factorial((j4 + j6 - j3).try_into().unwrap())
+        / factorial((j4 + j5 - j3).try_into().unwrap())
         * if (j4 + j6 + j1 + j3) % 2 == 1 {
             -1.0
         } else {

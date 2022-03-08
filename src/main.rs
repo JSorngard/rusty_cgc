@@ -1,5 +1,6 @@
 use crate::wigner::wigner_3j;
 use crate::wigner::wigner_6j;
+use crate::wigner::wigner_9j;
 mod wigner;
 
 fn main() {
@@ -18,6 +19,8 @@ fn main() {
         }
     }
     println!("{}", wigner_6j(1, 2, 3, 4, 5, 6));
+    println!("{}", wigner_9j(2, 4, 6, 4, 6, 8, 6, 8, 10));
+    println!("{}", wigner_9j(1, 2, 3, 1, 2, 3, 2, 4, 6));
     let elapsed = start_time.elapsed();
     let num_symbols = i32::pow(MAXJ * (2 * MAXJ + 1), 3) as u32;
     println!(

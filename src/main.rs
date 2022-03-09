@@ -117,7 +117,7 @@ mod tests {
 
     #[test]
     fn test_good_wigner_d_inputs() {
-        assert_relative_eq!(wigner_d(2, 1, -1, 0.0, PI, 0.0).re, 1.0);
-        assert_relative_eq!(wigner_d(2, 1, -1, 0.0, PI, 0.0).im, 0.0);
+        assert_relative_eq!(wigner_d(2, 1, -1, PI / 2.0, PI, -PI / 2.0).re, 1.0);
+        assert_relative_eq!(wigner_d(2, 1, -1, PI / 2.0, PI, -PI / 2.0).im, 0.0);
     }
 }

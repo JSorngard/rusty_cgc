@@ -6,7 +6,7 @@ use num::complex::Complex;
 ///quantum numbers belonging to the first three angular momentum quantum numbers.
 pub fn wigner_3j(j1: i32, j2: i32, j3: i32, m1: i32, m2: i32, m3: i32) -> f64 {
     let sign: f64 = if (j1 - j2 - m3) % 2 == 0 { 1.0 } else { -1.0 };
-    sign * clebsch_gordan(j1, j2, j3, m1, m2, -m3) / f64::sqrt(2.0 * f64::from(j3) + 1.0)
+    sign * clebsch_gordan(j1, j2, j3, m1, m2, -m3) / (2.0 * f64::from(j3) + 1.0).sqrt()
 }
 
 pub fn wigner_6j(j1: i32, j2: i32, j3: i32, j4: i32, j5: i32, j6: i32) -> f64 {
@@ -154,23 +154,26 @@ pub fn wigner_9j(
 }
 
 fn delta(a: i32, b: i32, c: i32) -> f64 {
-    f64::sqrt(
-        factorial((a + c - b).try_into().unwrap()) * factorial((a - c + b).try_into().unwrap())
-            / factorial((a + c + b + 1).try_into().unwrap())
-            * factorial((-a + c + b).try_into().unwrap()),
-    )
+    (factorial((a + c - b).try_into().unwrap()) * factorial((a - c + b).try_into().unwrap())
+        / factorial((a + c + b + 1).try_into().unwrap())
+        * factorial((-a + c + b).try_into().unwrap()))
+    .sqrt()
 }
 
 fn nabla(a: i32, b: i32, c: i32) -> f64 {
-    f64::sqrt(
-        factorial((a - b + c).try_into().unwrap()) * factorial((a + b - c).try_into().unwrap())
-            / factorial((b + c - a).try_into().unwrap())
-            * factorial((a + b + c + 1).try_into().unwrap()),
-    )
+    (factorial((a - b + c).try_into().unwrap()) * factorial((a + b - c).try_into().unwrap())
+        / factorial((b + c - a).try_into().unwrap())
+        * factorial((a + b + c + 1).try_into().unwrap()))
+    .sqrt()
 }
 
 ///Returns the value of the small Wigner d-matrix in the z-y-z convention.
-pub fn wigner_small_d(j: i32, mp: i32, m: i32, beta: f64) -> f64 {
+///If the input is not valid it returns an error instead.
+pub fn wigner_small_d(j: i32, mp: i32, m: i32, beta: f64) -> Result<f64, String> {
+    if mp.abs() > j || m.abs() > j {
+        return Err("m-values can not be larger than j".to_owned());
+    }
+
     let prefactor = f64::sqrt(
         factorial((j + mp).try_into().unwrap())
             * factorial((j - mp).try_into().unwrap())
@@ -187,14 +190,26 @@ pub fn wigner_small_d(j: i32, mp: i32, m: i32, beta: f64) -> f64 {
                 * factorial((j - mp - s).try_into().unwrap()))
             * if (mp - m + s) % 2 == 1 { -1.0 } else { 1.0 };
     }
-    sum * prefactor
+    Ok(sum * prefactor)
 }
 
 ///Returns the value of the Wigner D-matrix in the z-y-z convention.
-pub fn wigner_d(j: i32, mp: i32, m: i32, alpha: f64, beta: f64, gamma: f64) -> Complex<f64> {
-    (-1.0 * Complex::<f64>::i() * (mp as f64) * alpha).exp()
-        * wigner_small_d(j, mp, m, beta)
-        * (-1.0 * Complex::<f64>::i() * (m as f64) * gamma).exp()
+///If the input is not valid it returns an error instead.
+pub fn wigner_d(
+    j: i32,
+    mp: i32,
+    m: i32,
+    alpha: f64,
+    beta: f64,
+    gamma: f64,
+) -> Result<Complex<f64>, String> {
+    let d = match wigner_small_d(j, mp, m, beta) {
+        Ok(x) => x,
+        Err(x) => return Err(x),
+    };
+    Ok((-1.0 * Complex::<f64>::i() * (mp as f64) * alpha).exp()
+        * d
+        * (-1.0 * Complex::<f64>::i() * (m as f64) * gamma).exp())
 }
 
 ///Returns the value of the Clebsch-Gordan coefficient for
@@ -214,7 +229,7 @@ pub fn clebsch_gordan(j1: i32, j2: i32, j3: i32, m1: i32, m2: i32, m3: i32) -> f
         return 0.0;
     }
 
-    if j1 < i32::abs(m1) || j2 < i32::abs(m2) || j3 < i32::abs(m3) {
+    if j1 < m1.abs() || j2 < m2.abs() || j3 < m3.abs() {
         return 0.0;
     }
 
@@ -222,7 +237,7 @@ pub fn clebsch_gordan(j1: i32, j2: i32, j3: i32, m1: i32, m2: i32, m3: i32) -> f
         return 0.0;
     }
 
-    if i32::abs(m1) + i32::abs(m2) == 0 && (j1 + j2 + j3) % 2 == 1 {
+    if m1.abs() + m2.abs() == 0 && (j1 + j2 + j3) % 2 == 1 {
         return 0.0;
     }
 
@@ -277,7 +292,7 @@ pub fn clebsch_gordan(j1: i32, j2: i32, j3: i32, m1: i32, m2: i32, m3: i32) -> f
     }
 
     let res = cc * s1;
-    if f64::abs(res) < 1e-14 {
+    if res.abs() < 1e-14 {
         //guard against floating point errors making a zero result non-zero
         0.0
     } else {

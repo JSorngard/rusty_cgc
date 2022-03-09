@@ -102,14 +102,17 @@ mod tests {
         let points = 12;
         for i in 0..=points {
             let arg = i as f64 * 2.0 * PI / points as f64;
-            assert_relative_eq!(wigner_small_d(1, 0, 0, arg), arg.cos());
-            assert_relative_eq!(wigner_small_d(1, 1, 1, arg), (1.0 + arg.cos()) / 2.0);
+            assert_relative_eq!(wigner_small_d(1, 0, 0, arg).unwrap(), arg.cos());
             assert_relative_eq!(
-                wigner_small_d(2, 2, 0, arg),
+                wigner_small_d(1, 1, 1, arg).unwrap(),
+                ((1.0 + arg.cos()) / 2.0)
+            );
+            assert_relative_eq!(
+                wigner_small_d(2, 2, 0, arg).unwrap(),
                 f64::sqrt(3.0 / 8.0) * arg.sin() * arg.sin()
             );
             assert_relative_eq!(
-                wigner_small_d(2, 1, -1, arg),
+                wigner_small_d(2, 1, -1, arg).unwrap(),
                 (-2.0 * arg.cos() * arg.cos() + arg.cos() + 1.0) / 2.0
             );
         }
@@ -117,7 +120,7 @@ mod tests {
 
     #[test]
     fn test_good_wigner_d_inputs() {
-        assert_relative_eq!(wigner_d(2, 1, -1, PI / 2.0, PI, -PI / 2.0).re, 1.0);
-        assert_relative_eq!(wigner_d(2, 1, -1, PI / 2.0, PI, -PI / 2.0).im, 0.0);
+        assert_relative_eq!(wigner_d(2, 1, -1, PI / 2.0, PI, -PI / 2.0).unwrap().re, 1.0);
+        assert_relative_eq!(wigner_d(2, 1, -1, PI / 2.0, PI, -PI / 2.0).unwrap().im, 0.0);
     }
 }

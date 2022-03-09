@@ -99,29 +99,20 @@ mod tests {
 
     #[test]
     fn test_good_wigner_small_d_inputs() {
-        assert_relative_eq!(wigner_small_d(1, 0, 0, 0.0), d100(0.0));
-        assert_relative_eq!(wigner_small_d(1, 0, 0, PI / 2.0), d100(PI / 2.0));
-        assert_relative_eq!(wigner_small_d(1, 0, 0, PI), d100(PI));
-        assert_relative_eq!(wigner_small_d(1, 0, 0, -PI / 2.0), d100(-PI / 2.0));
-        assert_relative_eq!(wigner_small_d(1, 0, 0, PI / 4.0), d100(PI / 4.0));
-
-        assert_relative_eq!(wigner_small_d(1, 1, 1, 0.0), d111(0.0));
-        assert_relative_eq!(wigner_small_d(1, 1, 1, PI / 2.0), d111(PI / 2.0));
-        assert_relative_eq!(wigner_small_d(1, 1, 1, PI), d111(PI));
-        assert_relative_eq!(wigner_small_d(1, 1, 1, -PI / 2.0), d111(-PI / 2.0));
-        assert_relative_eq!(wigner_small_d(1, 1, 1, PI / 4.0), d111(PI / 4.0));
-
-        assert_relative_eq!(wigner_small_d(2, 2, 0, 0.0), d220(0.0));
-        assert_relative_eq!(wigner_small_d(2, 2, 0, PI / 2.0), d220(PI / 2.0));
-        assert_relative_eq!(wigner_small_d(2, 2, 0, PI), d220(PI));
-        assert_relative_eq!(wigner_small_d(2, 2, 0, -PI / 2.0), d220(-PI / 2.0));
-        assert_relative_eq!(wigner_small_d(2, 2, 0, PI / 4.0), d220(PI / 4.0));
-
-        assert_relative_eq!(wigner_small_d(2, 1, -1, 0.0), d21m1(0.0));
-        assert_relative_eq!(wigner_small_d(2, 1, -1, PI / 2.0), d21m1(PI / 2.0));
-        assert_relative_eq!(wigner_small_d(2, 1, -1, PI), d21m1(PI));
-        assert_relative_eq!(wigner_small_d(2, 1, -1, -PI / 2.0), d21m1(-PI / 2.0));
-        assert_relative_eq!(wigner_small_d(2, 1, -1, PI / 4.0), d21m1(PI / 4.0),);
+        let points = 12;
+        for i in 0..=points {
+            let arg = i as f64 * 2.0 * PI / points as f64;
+            assert_relative_eq!(wigner_small_d(1, 0, 0, arg), arg.cos());
+            assert_relative_eq!(wigner_small_d(1, 1, 1, arg), (1.0 + arg.cos()) / 2.0);
+            assert_relative_eq!(
+                wigner_small_d(2, 2, 0, arg),
+                f64::sqrt(3.0 / 8.0) * arg.sin() * arg.sin()
+            );
+            assert_relative_eq!(
+                wigner_small_d(2, 1, -1, arg),
+                (-2.0 * arg.cos() * arg.cos() + arg.cos() + 1.0) / 2.0
+            );
+        }
     }
 
     #[test]
@@ -129,20 +120,4 @@ mod tests {
         assert_relative_eq!(wigner_d(2, 1, -1, 0.0, PI, 0.0).re, 1.0);
         assert_relative_eq!(wigner_d(2, 1, -1, 0.0, PI, 0.0).im, 0.0);
     }
-}
-
-fn d100(x: f64) -> f64 {
-    x.cos()
-}
-
-fn d111(x: f64) -> f64 {
-    (1.0 + x.cos()) / 2.0
-}
-
-fn d220(x: f64) -> f64 {
-    f64::sqrt(3.0 / 8.0) * x.sin() * x.sin()
-}
-
-fn d21m1(x: f64) -> f64 {
-    (-2.0 * x.cos() * x.cos() + x.cos() + 1.0) / 2.0
 }

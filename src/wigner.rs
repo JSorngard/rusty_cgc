@@ -1,3 +1,5 @@
+use num::complex::Complex;
+
 ///Returns the value of the Wigner 3j symbol for the given integer inputs.
 ///Returns 0.0 if the arguments are invalid. The first three inputs are the
 ///angular momentum quantum numbers, while the last three are the magnetic
@@ -165,6 +167,34 @@ fn nabla(a: i32, b: i32, c: i32) -> f64 {
             / factorial((b + c - a).try_into().unwrap())
             * factorial((a + b + c + 1).try_into().unwrap()),
     )
+}
+
+///Returns the value of the small Wigner d-matrix in the z-y-z convention.
+pub fn wigner_small_d(j: i32, mp: i32, m: i32, beta: f64) -> f64 {
+    let prefactor = f64::sqrt(
+        factorial((j + mp).try_into().unwrap())
+            * factorial((j - mp).try_into().unwrap())
+            * factorial((j + m).try_into().unwrap())
+            * factorial((j - m).try_into().unwrap()),
+    );
+    let mut sum: f64 = 0.0;
+    for s in i32::max(0, m - mp)..=i32::min(j + m, j - mp) {
+        sum += f64::powf((beta / 2.0).cos(), (2 * j + m - mp - 2 * s).into())
+            * f64::powf((beta / 2.0).sin(), (mp - m + 2 * s).into())
+            / (factorial((j + m - s).try_into().unwrap())
+                * factorial(s.try_into().unwrap())
+                * factorial((mp - m + s).try_into().unwrap())
+                * factorial((j - mp - s).try_into().unwrap()))
+            * if (mp - m + s) % 2 == 1 { -1.0 } else { 1.0 };
+    }
+    sum * prefactor
+}
+
+///Returns the value of the Wigner D-matrix in the z-y-z convention.
+pub fn wigner_d(j: i32, mp: i32, m: i32, alpha: f64, beta: f64, gamma: f64) -> Complex<f64> {
+    (-1.0 * Complex::<f64>::i() * (mp as f64) * alpha).exp()
+        * wigner_small_d(j, mp, m, beta)
+        * (-1.0 * Complex::<f64>::i() * (m as f64) * gamma).exp()
 }
 
 ///Returns the value of the Clebsch-Gordan coefficient for

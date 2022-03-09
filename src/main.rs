@@ -1,6 +1,7 @@
 use crate::wigner::wigner_3j;
 use crate::wigner::wigner_6j;
 use crate::wigner::wigner_9j;
+use crate::wigner::wigner_d;
 use crate::wigner::wigner_small_d;
 use std::f64::consts::PI;
 #[macro_use]
@@ -53,10 +54,10 @@ mod tests {
 
     #[test]
     fn test_good_cgc_input() {
-        assert_eq!(clebsch_gordan(5, 5, 0, 1, -1, 0), 0.30151134457776363);
-        assert_eq!(clebsch_gordan(1, 2, 1, 1, -1, 0), 0.5477225575051661);
-        assert_eq!(clebsch_gordan(1, 1, 0, 1, -1, 0), 0.5773502691896257);
-        assert_eq!(clebsch_gordan(1, 2, 3, 1, 2, 3), 1.0);
+        assert_relative_eq!(clebsch_gordan(5, 5, 0, 1, -1, 0), f64::sqrt(1.0 / 11.0));
+        assert_relative_eq!(clebsch_gordan(1, 2, 1, 1, -1, 0), f64::sqrt(3.0 / 10.0));
+        assert_relative_eq!(clebsch_gordan(1, 1, 0, 1, -1, 0), f64::sqrt(1.0 / 3.0));
+        assert_relative_eq!(clebsch_gordan(1, 2, 3, 1, 2, 3), 1.0);
     }
 
     #[test]
@@ -69,10 +70,13 @@ mod tests {
 
     #[test]
     fn test_good_3j_input() {
-        assert_eq!(wigner_3j(1, 1, 0, 0, 0, 0), -0.5773502691896257);
-        assert_eq!(wigner_3j(1, 1, 2, -1, 1, 0), 0.18257418583505536);
-        assert_eq!(wigner_3j(1, 2, 3, 1, 2, -3), 0.3779644730092272);
-        assert_eq!(wigner_3j(10, 10, 9, 5, 4, -9), 0.09825449077444699);
+        assert_relative_eq!(wigner_3j(1, 1, 0, 0, 0, 0), -f64::sqrt(1.0 / 3.0));
+        assert_relative_eq!(wigner_3j(1, 1, 2, -1, 1, 0), f64::sqrt(1.0 / 30.0));
+        assert_relative_eq!(wigner_3j(1, 2, 3, 1, 2, -3), f64::sqrt(1.0 / 7.0));
+        assert_relative_eq!(
+            wigner_3j(10, 10, 9, 5, 4, -9),
+            11.0 / 3.0 * f64::sqrt(91.0 / 126730.0)
+        );
     }
 
     #[test]
@@ -95,41 +99,50 @@ mod tests {
 
     #[test]
     fn test_good_wigner_small_d_inputs() {
-        //d(1,0,0,x) = cos(x)
-        assert_eq!(wigner_small_d(1, 0, 0, 0.0), 1.0);
-        assert_eq!(wigner_small_d(1, 0, 0, PI / 2.0), 0.0);
-        assert_eq!(wigner_small_d(1, 0, 0, PI), -1.0);
-        assert_eq!(wigner_small_d(1, 0, 0, -PI / 2.0), 0.0);
-        relative_eq!(wigner_small_d(1, 0, 0, PI / 4.0), (PI / 4.0).cos());
+        assert_relative_eq!(wigner_small_d(1, 0, 0, 0.0), d100(0.0));
+        assert_relative_eq!(wigner_small_d(1, 0, 0, PI / 2.0), d100(PI / 2.0));
+        assert_relative_eq!(wigner_small_d(1, 0, 0, PI), d100(PI));
+        assert_relative_eq!(wigner_small_d(1, 0, 0, -PI / 2.0), d100(-PI / 2.0));
+        assert_relative_eq!(wigner_small_d(1, 0, 0, PI / 4.0), d100(PI / 4.0));
 
-        //d(1,1,1,x) == (1+cos(x))/2
-        assert_eq!(wigner_small_d(1, 1, 1, 0.0), 1.0);
-        relative_eq!(wigner_small_d(1, 1, 1, PI / 2.0), 0.5);
-        relative_eq!(wigner_small_d(1, 1, 1, PI), 0.0);
-        relative_eq!(wigner_small_d(1, 1, 1, -PI / 2.0), 0.5);
-        relative_eq!(
-            wigner_small_d(1, 1, 1, PI / 4.0),
-            (1.0 + (PI / 4.0).cos()) / 2.0
-        );
+        assert_relative_eq!(wigner_small_d(1, 1, 1, 0.0), d111(0.0));
+        assert_relative_eq!(wigner_small_d(1, 1, 1, PI / 2.0), d111(PI / 2.0));
+        assert_relative_eq!(wigner_small_d(1, 1, 1, PI), d111(PI));
+        assert_relative_eq!(wigner_small_d(1, 1, 1, -PI / 2.0), d111(-PI / 2.0));
+        assert_relative_eq!(wigner_small_d(1, 1, 1, PI / 4.0), d111(PI / 4.0));
 
-        //d(2,2,0,x) == sqrt(3/8)sin^2(x)
-        assert_eq!(wigner_small_d(2, 2, 0, 0.0), 0.0);
-        relative_eq!(wigner_small_d(2, 2, 0, PI / 2.0), f64::sqrt(3.0 / 8.0));
-        relative_eq!(wigner_small_d(2, 2, 0, PI), 0.0);
-        relative_eq!(wigner_small_d(2, 2, 0, -PI / 2.0), f64::sqrt(3.0 / 8.0));
-        relative_eq!(
-            wigner_small_d(2, 2, 0, PI / 4.0),
-            f64::sqrt(3.0 / 8.0) * (PI / 4.0).sin() * (PI / 4.0).sin()
-        );
+        assert_relative_eq!(wigner_small_d(2, 2, 0, 0.0), d220(0.0));
+        assert_relative_eq!(wigner_small_d(2, 2, 0, PI / 2.0), d220(PI / 2.0));
+        assert_relative_eq!(wigner_small_d(2, 2, 0, PI), d220(PI));
+        assert_relative_eq!(wigner_small_d(2, 2, 0, -PI / 2.0), d220(-PI / 2.0));
+        assert_relative_eq!(wigner_small_d(2, 2, 0, PI / 4.0), d220(PI / 4.0));
 
-        //d(2,1,-1,x) == (-2cos^2(x)+cos(x)-1)/2
-        assert_eq!(wigner_small_d(2, 1, -1, 0.0), 0.0);
-        relative_eq!(wigner_small_d(2, 1, -1, PI / 2.0), 0.5);
-        relative_eq!(wigner_small_d(2, 1, -1, PI), 1.0);
-        relative_eq!(wigner_small_d(2, 1, -1, -PI / 2.0), 0.5);
-        relative_eq!(
-            wigner_small_d(2, 1, -1, PI / 4.0),
-            0.5 * (-2.0 * (PI / 4.0).cos() * (PI / 4.0).cos() + (PI / 4.0).cos() - 1.0)
-        );
+        assert_relative_eq!(wigner_small_d(2, 1, -1, 0.0), d21m1(0.0));
+        assert_relative_eq!(wigner_small_d(2, 1, -1, PI / 2.0), d21m1(PI / 2.0));
+        assert_relative_eq!(wigner_small_d(2, 1, -1, PI), d21m1(PI));
+        assert_relative_eq!(wigner_small_d(2, 1, -1, -PI / 2.0), d21m1(-PI / 2.0));
+        assert_relative_eq!(wigner_small_d(2, 1, -1, PI / 4.0), d21m1(PI / 4.0),);
     }
+
+    #[test]
+    fn test_good_wigner_d_inputs() {
+        assert_relative_eq!(wigner_d(2, 1, -1, 0.0, PI, 0.0).re, 1.0);
+        assert_relative_eq!(wigner_d(2, 1, -1, 0.0, PI, 0.0).im, 0.0);
+    }
+}
+
+fn d100(x: f64) -> f64 {
+    x.cos()
+}
+
+fn d111(x: f64) -> f64 {
+    (1.0 + x.cos()) / 2.0
+}
+
+fn d220(x: f64) -> f64 {
+    f64::sqrt(3.0 / 8.0) * x.sin() * x.sin()
+}
+
+fn d21m1(x: f64) -> f64 {
+    (-2.0 * x.cos() * x.cos() + x.cos() + 1.0) / 2.0
 }

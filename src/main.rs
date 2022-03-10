@@ -94,7 +94,7 @@ mod tests {
                 }
             }
         }
-        assert_eq!(acc, 57.84244636528764);
+        assert_relative_eq!(acc, 57.84244664746502);
     }
 
     #[test]

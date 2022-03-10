@@ -1,3 +1,4 @@
+use crate::truths::return_3j_truths;
 use crate::wigner::wigner_3j;
 use crate::wigner::wigner_6j;
 use crate::wigner::wigner_9j;
@@ -7,6 +8,7 @@ use std::f64::consts::PI;
 #[macro_use]
 extern crate approx;
 
+mod truths;
 mod wigner;
 
 fn main() {
@@ -34,6 +36,7 @@ fn main() {
         "This gives an average speed of {:.2?} per function call",
         elapsed / num_symbols
     );
+
     println!("{}", wigner_6j(1, 2, 3, 4, 5, 6));
     println!("{}", wigner_9j(2, 4, 6, 4, 6, 8, 6, 8, 10));
     println!("{}", wigner_9j(1, 2, 3, 1, 2, 3, 2, 4, 6));
@@ -80,21 +83,46 @@ mod tests {
     }
 
     #[test]
-    fn test_sum_of_many_3j() {
+    fn test_many_3js() {
+        //Tests every valid combination of inputs with j1 and j2 <= 10
+
+        //Load the right answers, computed with Mathematica.
+        let truth = return_3j_truths();
+        let truths: Vec<&str> = truth.split("\n").collect();
+
+        //Put them all in a hash map.
+        let mut threej_db = std::collections::HashMap::<&str, f64>::new();
+        for t in truths {
+            let parts: Vec<&str> = t.split("->").collect();
+            threej_db.insert(parts[0].trim(), parts[1].trim().parse().unwrap());
+        }
+
         const MAXJ: i32 = 10;
-        let mut acc: f64 = 0.0;
+
         for j1 in 0..=MAXJ {
             for j2 in 0..=MAXJ {
-                for j3 in i32::abs(j1 - j2)..=j1 + j2 {
+                for j3 in (j1 - j2).abs()..=j1 + j2 {
                     for m1 in -j1..=j1 {
                         for m2 in -j2..=j2 {
-                            acc += wigner_3j(j1, j2, j3, m1, m2, -m1 - m2);
+                            let s = format!(
+                                "(({}, {}), ({}, {}), ({}, {}))",
+                                j1,
+                                m1,
+                                j2,
+                                m2,
+                                j3,
+                                -m1 - m2
+                            );
+                            println!("{}", s);
+                            assert_relative_eq!(
+                                wigner_3j(j1, j2, j3, m1, m2, -m1 - m2),
+                                threej_db[s.as_str()],
+                            );
                         }
                     }
                 }
             }
         }
-        assert_relative_eq!(acc, 57.84244664746502);
     }
 
     #[test]

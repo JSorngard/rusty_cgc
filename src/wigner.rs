@@ -6,7 +6,7 @@ use num::complex::Complex;
 ///quantum numbers belonging to the first three angular momentum quantum numbers.
 pub fn wigner_3j(j1: u32, j2: u32, j3: u32, m1: i32, m2: i32, m3: i32) -> f64 {
     let (j1, j2, j3, m1, m2, m3, mut sign) = reorder3j(j1, j2, j3, m1, m2, m3, 1.0);
-    sign *= if ((j1 as i32) - (j2 as i32) - m3) % 2 == 0 {
+    sign *= if ((j1 as i64) - (j2 as i64) - m3 as i64) % 2 == 0 {
         1.0
     } else {
         -1.0

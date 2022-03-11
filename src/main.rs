@@ -1,10 +1,6 @@
-use crate::truths::return_3j_truths;
 use crate::wigner::wigner_3j;
 use crate::wigner::wigner_6j;
 use crate::wigner::wigner_9j;
-use crate::wigner::wigner_d;
-use crate::wigner::wigner_small_d;
-use std::f64::consts::PI;
 #[macro_use]
 extern crate approx;
 
@@ -45,7 +41,11 @@ fn main() {
 #[cfg(test)]
 mod tests {
     use super::*;
+    use crate::truths::return_3j_truths;
     use crate::wigner::clebsch_gordan;
+    use crate::wigner::wigner_d;
+    use crate::wigner::wigner_small_d;
+    use std::f64::consts::PI;
 
     #[test]
     fn test_bad_cgc_input() {

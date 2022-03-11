@@ -87,15 +87,7 @@ mod tests {
         //Tests every valid combination of inputs with j1 and j2 <= 10
 
         //Load the right answers, computed with Mathematica.
-        let truth = return_3j_truths();
-        let truths: Vec<&str> = truth.split("\n").collect();
-
-        //Put them all in a hash map.
-        let mut threej_db = std::collections::HashMap::<&str, f64>::new();
-        for t in truths {
-            let parts: Vec<&str> = t.split("->").collect();
-            threej_db.insert(parts[0].trim(), parts[1].trim().parse().unwrap());
-        }
+        let threej_truths = return_3j_truths();
 
         const MAXJ: i32 = 10;
 
@@ -116,7 +108,7 @@ mod tests {
                             println!("{}", s);
                             assert_relative_eq!(
                                 wigner_3j(j1, j2, j3, m1, m2, -m1 - m2),
-                                threej_db[s.as_str()],
+                                threej_truths[s.as_str()],
                             );
                         }
                     }

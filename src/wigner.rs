@@ -9,6 +9,37 @@ pub fn wigner_3j(j1: i32, j2: i32, j3: i32, m1: i32, m2: i32, m3: i32) -> f64 {
     sign * clebsch_gordan(j1, j2, j3, m1, m2, -m3) / (2.0 * f64::from(j3) + 1.0).sqrt()
 }
 
+///Reorder j1/m1, j2/m2, j3/m3 such that j1 >= j2 >= j3 and m1 >= 0 or m1 == 0 && m2 >= 0
+#[allow(dead_code)]
+fn reorder3j(
+    j1: u32,
+    j2: u32,
+    j3: u32,
+    m1: i32,
+    m2: i32,
+    m3: i32,
+    mut sign: f64,
+) -> (u32, u32, u32, i32, i32, i32, f64) {
+    //An odd permutation of the columns or a
+    //sign change of the m-quantum values (time reversal)
+    //give a phase factor of (-1)^(j1+j2+j3).
+    //If we assume that this phase factor is -1, we are only wrong if j1+j2+j3 is even,
+    //which we correct for at the end.
+    if j1 < j2 {
+        return reorder3j(j2, j1, j3, m2, m1, m3, -sign);
+    } else if j2 < j3 {
+        return reorder3j(j1, j3, j2, m1, m3, m2, -sign);
+    } else if m1 < 0 || (m1 == 0 && m2 < 0) {
+        return reorder3j(j1, j2, j3, -m1, -m2, -m3, -sign);
+    } else {
+        //Sign doesn't matter if total J = j1 + j2 + j3 is even
+        if (j1 + j2 + j3) % 2 == 0 {
+            sign = 1.0;
+        }
+        return (j1, j2, j3, m1, m2, m3, sign);
+    }
+}
+
 pub fn wigner_6j(j1: i32, j2: i32, j3: i32, j4: i32, j5: i32, j6: i32) -> f64 {
     if j4 < 0 {
         return 0.0;

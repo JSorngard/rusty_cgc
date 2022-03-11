@@ -4,8 +4,13 @@ use num::complex::Complex;
 ///Returns 0.0 if the arguments are invalid. The first three inputs are the
 ///angular momentum quantum numbers, while the last three are the magnetic
 ///quantum numbers belonging to the first three angular momentum quantum numbers.
-pub fn wigner_3j(j1: i32, j2: i32, j3: i32, m1: i32, m2: i32, m3: i32) -> f64 {
-    let sign: f64 = if (j1 - j2 - m3) % 2 == 0 { 1.0 } else { -1.0 };
+pub fn wigner_3j(j1: u32, j2: u32, j3: u32, m1: i32, m2: i32, m3: i32) -> f64 {
+    let (j1, j2, j3, m1, m2, m3, mut sign) = reorder3j(j1, j2, j3, m1, m2, m3, 1.0);
+    sign *= if ((j1 as i32) - (j2 as i32) - m3) % 2 == 0 {
+        1.0
+    } else {
+        -1.0
+    };
     sign * clebsch_gordan(j1, j2, j3, m1, m2, -m3) / (2.0 * f64::from(j3) + 1.0).sqrt()
 }
 
@@ -248,13 +253,17 @@ pub fn wigner_d(
 ///The first three inputs are the angular momentum quantum numbers,
 ///while the last three are the magnetic quantum numbers belonging to the first
 ///three angular momentum quantum numbers.
-pub fn clebsch_gordan(j1: i32, j2: i32, j3: i32, m1: i32, m2: i32, m3: i32) -> f64 {
+pub fn clebsch_gordan(uj1: u32, uj2: u32, uj3: u32, m1: i32, m2: i32, m3: i32) -> f64 {
     //Normal Fortran rules: variables beginning with
     //i,j,...,n are i32 and everything else is f32
     //Original Fortran code says: IMPLICIT REAL*8(A-H,O-Z)
     //=> all variables that begin with A-H or O-Z must be f64
     //This code is simply ported Fortran code,
     //as such it is not idiomatic rust.
+
+    let j1: i32 = uj1.try_into().unwrap();
+    let j2: i32 = uj2.try_into().unwrap();
+    let j3: i32 = uj3.try_into().unwrap();
 
     if m3 != m1 + m2 {
         return 0.0;

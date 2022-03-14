@@ -6,11 +6,11 @@ use num::complex::Complex;
 ///quantum numbers belonging to the first three angular momentum quantum numbers.
 pub fn wigner_3j(j1: u32, j2: u32, j3: u32, m1: i32, m2: i32, m3: i32) -> f64 {
     let (j1, j2, j3, m1, m2, m3, mut sign) = reorder3j(j1, j2, j3, m1, m2, m3, 1.0);
-    sign *= if ((j1 as i64) - (j2 as i64) - m3 as i64) % 2 == 0 {
-        1.0
-    } else {
-        -1.0
-    };
+
+    if (i64::from(j1) - i64::from(j2) - i64::from(m3)) % 2 != 0 {
+        sign *= -1.0
+    }
+
     sign * clebsch_gordan(j1, j2, j3, m1, m2, -m3) / (2.0 * f64::from(j3) + 1.0).sqrt()
 }
 
@@ -345,7 +345,9 @@ fn is_triad(j1: i32, j2: i32, j3: i32) -> bool {
     j3 >= (j1 - j2).abs() && j3 <= j1 + j2
 }
 
+#[allow(dead_code)]
 fn is_float_triad(j1: f32, j2: f32, j3: f32) -> bool {
+    //normal triangle condition                j1 + j2 + j3 must be an integer
     j3 >= (j1 - j2).abs() && j3 <= j1 + j2 && (j1 + j1 + j3).fract() == 0.0
 }
 

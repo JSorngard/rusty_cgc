@@ -342,7 +342,11 @@ pub fn clebsch_gordan(uj1: u32, uj2: u32, uj3: u32, m1: i32, m2: i32, m3: i32) -
 
 ///Returns whether the given triplet of angular momenta form a triad
 fn is_triad(j1: i32, j2: i32, j3: i32) -> bool {
-    j3 >= i32::abs(j1 - j2) && j3 <= j1 + j2 // && (j1 + j1 + j3).fract() == 0.0
+    j3 >= (j1 - j2).abs() && j3 <= j1 + j2
+}
+
+fn is_float_triad(j1: f32, j2: f32, j3: f32) -> bool {
+    j3 >= (j1 - j2).abs() && j3 <= j1 + j2 && (j1 + j1 + j3).fract() == 0.0
 }
 
 ///Returns the factorial of the input integer as a float

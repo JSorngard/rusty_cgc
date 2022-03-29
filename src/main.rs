@@ -94,6 +94,10 @@ mod tests {
         const MAXJ: u32 = 10;
 
         //We allow floating point errors on the scale of TOL.
+        //The answers we compare against are exact,
+        //but we use floats to compute the answers, so we will have
+        //errors due to the formulas for 3j symbols containing alternating
+        //products and divisions by large factorials.
         const TOL: f64 = 100.0 * f64::EPSILON;
 
         for j1 in 0..=MAXJ {

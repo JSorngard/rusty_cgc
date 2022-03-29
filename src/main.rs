@@ -1,7 +1,7 @@
 #[allow(dead_code)]
 mod wigner;
 
-use wigner::{wigner_3j,wigner_6j,wigner_9j};
+use wigner::{wigner_3j, wigner_6j, wigner_9j};
 
 fn main() {
     const MAXJ: u32 = 10;
@@ -94,7 +94,7 @@ mod tests {
         const MAXJ: u32 = 10;
 
         //We allow floating point errors on the scale of TOL.
-        const TOL: f64 = 100.0*f64::EPSILON;
+        const TOL: f64 = 100.0 * f64::EPSILON;
 
         for j1 in 0..=MAXJ {
             for j2 in 0..=MAXJ {

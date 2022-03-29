@@ -105,8 +105,7 @@ pub fn wigner_9j(
         return 0.0;
     }
 
-    let prefactor = phase(j13 + j23 - j33) * nabla(j21, j11, j31)
-        / nabla(j21, j22, j23)
+    let prefactor = phase(j13 + j23 - j33) * nabla(j21, j11, j31) / nabla(j21, j22, j23)
         * nabla(j12, j22, j32)
         / nabla(j12, j11, j13)
         * nabla(j33, j31, j32)
@@ -153,8 +152,7 @@ pub fn wigner_9j(
                 /*println!("x={}, y={}, z={}", x, y, z);
                 println!("gives j11 + j21 - j31 - z = {}", j11 + j21 - j31 - z);*/
 
-                sum += phase(x + y + z)
-                    * factorial((2 * j23 - x).try_into().unwrap())
+                sum += phase(x + y + z) * factorial((2 * j23 - x).try_into().unwrap())
                     / factorial(x.try_into().unwrap())
                     / factorial((j22 - j21 + j23 - x).try_into().unwrap())
                     * factorial((j21 + j22 - j23 + x).try_into().unwrap())
@@ -301,9 +299,10 @@ pub fn clebsch_gordan(uj1: u32, uj2: u32, uj3: u32, m1: i32, m2: i32, m3: i32) -
     let mut ir3 = j3 + m3 - ni;
     let mut ir4 = j1 - j2 - m3 + ni + 1;
     //Same here: all inputs to the factorials will be >= 0, so casting to u64 loses no sign information
-    let mut s1 = phase(ni+j2+m2)*factorial(ip1 as u64) / factorial(ir2 as u64) * factorial((ip2 - 1) as u64)
+    let mut s1 = phase(ni + j2 + m2) * factorial(ip1 as u64) / factorial(ir2 as u64)
+        * factorial((ip2 - 1) as u64)
         / (factorial(ni as u64) * factorial(ir3 as u64) * factorial((ir4 - 1) as u64));
-    
+
     let n = nm - ni;
     let mut fa;
     if n != 0 {

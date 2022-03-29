@@ -89,7 +89,11 @@ mod tests {
         //Load the right answers, computed with Mathematica.
         let threej_truths = return_3j_truths();
 
+        //The maximum values of the first two angular momenta.
         const MAXJ: u32 = 10;
+
+        //We allow floating point errors on the scale of TOL.
+        const TOL: f64 = 100.0*f64::EPSILON;
 
         for j1 in 0..=MAXJ {
             for j2 in 0..=MAXJ {
@@ -109,8 +113,7 @@ mod tests {
                             assert_relative_eq!(
                                 wigner_3j(j1, j2, j3, m1, m2, -m1 - m2),
                                 threej_truths[s.as_str()],
-                                //We allow floating point errors on the scale of 100*epsilon
-                                epsilon = 100.0*f64::EPSILON,
+                                epsilon = TOL,
                             );
                         }
                     }

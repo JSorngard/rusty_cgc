@@ -1,6 +1,5 @@
 #[allow(dead_code)]
 mod wigner;
-mod truths;
 
 use wigner::{wigner_3j,wigner_6j,wigner_9j};
 
@@ -38,6 +37,7 @@ fn main() {
 #[cfg(test)]
 #[macro_use]
 extern crate approx;
+mod truths;
 
 #[cfg(test)]
 mod tests {

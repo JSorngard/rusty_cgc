@@ -1,6 +1,3 @@
-#[macro_use]
-extern crate approx;
-
 #[allow(dead_code)]
 mod wigner;
 mod truths;
@@ -37,6 +34,10 @@ fn main() {
     println!("{}", wigner_9j(2, 4, 6, 4, 6, 8, 6, 8, 10));
     println!("{}", wigner_9j(1, 2, 3, 1, 2, 3, 2, 4, 6));
 }
+
+#[cfg(test)]
+#[macro_use]
+extern crate approx;
 
 #[cfg(test)]
 mod tests {

@@ -356,7 +356,7 @@ fn factorial(n: u64) -> f64 {
     }
 }
 
-///Returns a f64 with a value of 1.0 if the input is even, and -1.0 if it is odd
+///Returns an f64 with a value of 1.0 if the input is even, and -1.0 if it is odd
 fn phase(x: i32) -> f64 {
     if x % 2 == 0 {
         1.0

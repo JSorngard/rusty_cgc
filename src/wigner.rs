@@ -68,11 +68,7 @@ pub fn wigner_6j(j1: i32, j2: i32, j3: i32, j4: i32, j5: i32, j6: i32) -> f64 {
         * factorial((j4 + j5 + j3 + 1).try_into().unwrap())
         / factorial((-j2 + j1 + j3).try_into().unwrap())
         / factorial((j4 + j5 - j3).try_into().unwrap())
-        * if (j4 + j6 + j1 + j3) % 2 == 1 {
-            -1.0
-        } else {
-            1.0
-        };
+        * phase(j4 + j6 + j1 + j3);
     let mut sum: f64 = 0.0;
     for z in 0..=i32::min(i32::min(2 * j4, -j2 + j4 + j6), j4 - j5 + j3) {
         sum += factorial((2 * j4 - z).try_into().unwrap())
@@ -83,7 +79,7 @@ pub fn wigner_6j(j1: i32, j2: i32, j3: i32, j4: i32, j5: i32, j6: i32) -> f64 {
             / factorial((j4 - j5 + j3 - z).try_into().unwrap())
             / factorial((j2 + j4 + j6 + 1 - z).try_into().unwrap())
             / factorial((j4 + j5 + j3 + 1 - z).try_into().unwrap())
-            * if z % 2 == 1 { -1.0 } else { 1.0 };
+            * phase(z);
     }
     sum * fac
 }
@@ -109,11 +105,7 @@ pub fn wigner_9j(
         return 0.0;
     }
 
-    let prefactor = if (j13 + j23 - j33) % 2 == 1 {
-        -1.0
-    } else {
-        1.0
-    } * nabla(j21, j11, j31)
+    let prefactor = phase(j13 + j23 - j33) * nabla(j21, j11, j31)
         / nabla(j21, j22, j23)
         * nabla(j12, j22, j32)
         / nabla(j12, j11, j13)
@@ -158,10 +150,10 @@ pub fn wigner_9j(
                 // .map(|x| factorial(x.try_into().unwrap()))
                 // .product();
                 // sum += if (x + y + z) % 2 == 1 { -1.0 } else { 1.0 } * numerator / denominator
-                println!("x={}, y={}, z={}", x, y, z);
-                println!("gives j11 + j21 - j31 - z = {}", j11 + j21 - j31 - z);
+                /*println!("x={}, y={}, z={}", x, y, z);
+                println!("gives j11 + j21 - j31 - z = {}", j11 + j21 - j31 - z);*/
 
-                sum += if (x + y + z) % 2 == 1 { -1.0 } else { 1.0 }
+                sum += phase(x + y + z)
                     * factorial((2 * j23 - x).try_into().unwrap())
                     / factorial(x.try_into().unwrap())
                     / factorial((j22 - j21 + j23 - x).try_into().unwrap())
@@ -224,7 +216,7 @@ pub fn wigner_small_d(j: i32, mp: i32, m: i32, beta: f64) -> Result<f64, String>
                 * factorial(s.try_into().unwrap())
                 * factorial((mp - m + s).try_into().unwrap())
                 * factorial((j - mp - s).try_into().unwrap()))
-            * if (mp - m + s) % 2 == 1 { -1.0 } else { 1.0 };
+            * phase(mp - m + s);
     }
     Ok(sum * prefactor)
 }
@@ -361,5 +353,14 @@ fn factorial(n: u64) -> f64 {
             res *= i as f64;
         }
         res
+    }
+}
+
+///Returns 1 if the input is even, and -1 if it is odd
+fn phase(x: i32) -> f64 {
+    if x % 2 == 0 {
+        1.0
+    } else {
+        -1.0
     }
 }

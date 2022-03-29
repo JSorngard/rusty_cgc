@@ -80,11 +80,6 @@ mod tests {
             wigner_3j(10, 10, 9, 5, 4, -9),
             11.0 / 3.0 * f64::sqrt(91.0 / 126730.0)
         );
-        //Large inputs can cause floating point errors
-        // assert_relative_eq!(
-        //     wigner_3j(6, 10, 10, -1, -7, 8),
-        //     f64::sqrt(391.0 / 2717.0) / 5.0
-        // );
     }
 
     #[test]

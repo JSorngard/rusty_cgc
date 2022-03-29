@@ -83,7 +83,7 @@ mod tests {
     }
 
     #[test]
-    fn test_many_3js_to_within_epsilon_times_100() {
+    fn test_many_3js_to_within_relaxed_tolerance() {
         //Tests every valid combination of inputs with j1 and j2 <= 10
 
         //Load the right answers, computed with Mathematica.

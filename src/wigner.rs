@@ -1,3 +1,4 @@
+
 use num::complex::Complex;
 
 ///Returns the value of the Wigner 3j symbol for the given integer inputs.
@@ -15,7 +16,6 @@ pub fn wigner_3j(j1: u32, j2: u32, j3: u32, m1: i32, m2: i32, m3: i32) -> f64 {
 }
 
 ///Reorder j1/m1, j2/m2, j3/m3 such that j1 >= j2 >= j3 and m1 >= 0 or m1 == 0 && m2 >= 0
-#[allow(dead_code)]
 fn reorder3j(
     j1: u32,
     j2: u32,
@@ -334,7 +334,6 @@ fn is_triad(j1: i32, j2: i32, j3: i32) -> bool {
     j3 >= (j1 - j2).abs() && j3 <= j1 + j2
 }
 
-#[allow(dead_code)]
 fn is_float_triad(j1: f32, j2: f32, j3: f32) -> bool {
     //normal triangle condition                j1 + j2 + j3 must be an integer
     j3 >= (j1 - j2).abs() && j3 <= j1 + j2 && (j1 + j1 + j3).fract() == 0.0

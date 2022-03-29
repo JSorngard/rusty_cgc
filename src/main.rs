@@ -1,11 +1,11 @@
-use crate::wigner::wigner_3j;
-use crate::wigner::wigner_6j;
-use crate::wigner::wigner_9j;
 #[macro_use]
 extern crate approx;
 
-mod truths;
+#[allow(dead_code)]
 mod wigner;
+mod truths;
+
+use wigner::{wigner_3j,wigner_6j,wigner_9j};
 
 fn main() {
     const MAXJ: u32 = 10;

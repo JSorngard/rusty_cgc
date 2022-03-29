@@ -1,4 +1,3 @@
-
 use num::complex::Complex;
 
 ///Returns the value of the Wigner 3j symbol for the given integer inputs.

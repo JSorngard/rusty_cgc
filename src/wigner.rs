@@ -301,11 +301,9 @@ pub fn clebsch_gordan(uj1: u32, uj2: u32, uj3: u32, m1: i32, m2: i32, m3: i32) -
     let mut ir3 = j3 + m3 - ni;
     let mut ir4 = j1 - j2 - m3 + ni + 1;
     //Same here: all inputs to the factorials will be >= 0, so casting to u64 loses no sign information
-    let mut s1 = factorial(ip1 as u64) / factorial(ir2 as u64) * factorial((ip2 - 1) as u64)
+    let mut s1 = phase(ni+j2+m2)*factorial(ip1 as u64) / factorial(ir2 as u64) * factorial((ip2 - 1) as u64)
         / (factorial(ni as u64) * factorial(ir3 as u64) * factorial((ir4 - 1) as u64));
-    if (ni + j2 + m2) % 2 == 1 {
-        s1 = -s1;
-    }
+    
     let n = nm - ni;
     let mut fa;
     if n != 0 {

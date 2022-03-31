@@ -158,4 +158,9 @@ mod tests {
     fn test_good_6j_inputs() {
         assert_relative_eq!( wigner_6j(1, 2, 3, 4, 5, 6),f64::sqrt(2.0/715.0)/3.0,epsilon=TOL);
     }
+
+    #[test]
+    fn test_good_9j_inputs() {
+        assert_relative_eq!(wigner_9j(2,4,6,4,6,8,6,8,10), -37903.0/97274034.0);
+    }
 }

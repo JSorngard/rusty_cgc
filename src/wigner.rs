@@ -43,11 +43,7 @@ fn reorder3j(
     }
 }
 
-pub fn wigner_6j(j1: i32, j2: i32, j3: i32, j4: i32, j5: i32, j6: i32) -> f64 {
-    if j4 < 0 {
-        return 0.0;
-    }
-
+pub fn wigner_6j(j1: u32, j2: u32, j3: u32, j4: u32, j5: u32, j6: u32) -> f64 {
     if !is_triad(j1, j2, j3)
         || !is_triad(j1, j5, j6)
         || !is_triad(j4, j2, j6)
@@ -58,40 +54,40 @@ pub fn wigner_6j(j1: i32, j2: i32, j3: i32, j4: i32, j5: i32, j6: i32) -> f64 {
 
     let fac = delta(j2, j4, j6) * delta(j2, j1, j3) / factorial((j2 + j4 - j6).try_into().unwrap())
         * delta(j6, j5, j1)
-        / factorial((j6 - j5 + j1).try_into().unwrap())
+        / factorial((j6 + j1 - j5).try_into().unwrap())
         * factorial((j2 + j4 + j6 + 1).try_into().unwrap())
         / factorial((j6 + j5 - j1).try_into().unwrap())
         * delta(j4, j5, j3)
-        / factorial((j2 - j1 + j3).try_into().unwrap())
+        / factorial((j2 + j3 - j1).try_into().unwrap())
         * factorial((j4 + j5 + j3 + 1).try_into().unwrap())
-        / factorial((-j2 + j1 + j3).try_into().unwrap())
+        / factorial((j1 + j3 - j2).try_into().unwrap())
         / factorial((j4 + j5 - j3).try_into().unwrap())
-        * phase(j4 + j6 + j1 + j3);
+        * phase((j4 + j6 + j1 + j3).try_into().unwrap());
     let mut sum: f64 = 0.0;
-    for z in 0..=i32::min(i32::min(2 * j4, -j2 + j4 + j6), j4 - j5 + j3) {
+    for z in 0..=u32::min(u32::min(2 * j4, j4 + j6 - j2), j4 + j3 - j5) {
         sum += factorial((2 * j4 - z).try_into().unwrap())
             * factorial((j4 + j6 - j1 + j3 - z).try_into().unwrap())
             * factorial((j4 + j6 + j1 + j3 + 1 - z).try_into().unwrap())
             / factorial(z.try_into().unwrap())
-            / factorial((-j2 + j4 + j6 - z).try_into().unwrap())
-            / factorial((j4 - j5 + j3 - z).try_into().unwrap())
+            / factorial((j4 + j6 - z - j2).try_into().unwrap())
+            / factorial((j4 + j3 - z - j5).try_into().unwrap())
             / factorial((j2 + j4 + j6 + 1 - z).try_into().unwrap())
             / factorial((j4 + j5 + j3 + 1 - z).try_into().unwrap())
-            * phase(z);
+            * phase(z.try_into().unwrap());
     }
     sum * fac
 }
 
 pub fn wigner_9j(
-    j11: i32,
-    j21: i32,
-    j31: i32,
-    j12: i32,
-    j22: i32,
-    j32: i32,
-    j13: i32,
-    j23: i32,
-    j33: i32,
+    j11: u32,
+    j21: u32,
+    j31: u32,
+    j12: u32,
+    j22: u32,
+    j32: u32,
+    j13: u32,
+    j23: u32,
+    j33: u32,
 ) -> f64 {
     //Check that all rows are triads
     if !is_triad(j11, j21, j31) || !is_triad(j12, j22, j32) || !is_triad(j13, j23, j33) {
@@ -103,18 +99,22 @@ pub fn wigner_9j(
         return 0.0;
     }
 
-    let prefactor = phase(j13 + j23 - j33) * nabla(j21, j11, j31) / nabla(j21, j22, j23)
+    let prefactor = phase((j13 + j23 - j33).try_into().unwrap()) * nabla(j21, j11, j31)
+        / nabla(j21, j22, j23)
         * nabla(j12, j22, j32)
         / nabla(j12, j11, j13)
         * nabla(j33, j31, j32)
         / nabla(j33, j13, j23);
     let mut sum: f64 = 0.0;
-    for x in 0..=i32::min(i32::min(2 * j33, j22 - j21 + j23), j13 + j23 - j33) {
+    for x in 0..=u32::min(u32::min(2 * j33, j22 - j21 + j23), j13 + j23 - j33) {
         for y in 0..=j31 - j32 + j33 {
-            for z in i32::max(j11 - j12 - j13, 0)..=(j11 - j12 + j13) {
-                if -j11 + j12 + j33 - j23 + x + z < 0 {
+            for z in u32::max(j11 - j12 - j13, 0)..=(j11 - j12 + j13) {
+                if j12 + j33 + x + z < j11 + j23 {
                     continue;
                 }
+                // if  j12 - j11 + j33 - j23 + x + z < 0 {
+                //     continue;
+                // }
                 // let numerator: f64 = vec![
                 //     2 * j23 - x,
                 //     j21 + j22 - j23 + x,
@@ -150,44 +150,44 @@ pub fn wigner_9j(
                 /*println!("x={}, y={}, z={}", x, y, z);
                 println!("gives j11 + j21 - j31 - z = {}", j11 + j21 - j31 - z);*/
 
-                sum += phase(x + y + z) * factorial((2 * j23 - x).try_into().unwrap())
-                    / factorial(x.try_into().unwrap())
-                    / factorial((j22 - j21 + j23 - x).try_into().unwrap())
-                    * factorial((j21 + j22 - j23 + x).try_into().unwrap())
-                    / factorial((j13 + j23 - j33 - x).try_into().unwrap())
-                    / factorial((j21 - j12 + j32 - j23 + x + y).try_into().unwrap())
-                    * factorial((j13 - j23 + j33 + x).try_into().unwrap())
-                    / factorial((j12 - j11 - j23 + j33 + x + z).try_into().unwrap())
-                    / factorial(y.try_into().unwrap())
-                    * factorial((j22 - j12 + j32 + y).try_into().unwrap())
-                    / factorial((j12 + j22 - j32 - y).try_into().unwrap())
-                    * factorial((j31 + j32 - j33 + y).try_into().unwrap())
-                    / factorial((j31 - j32 + j33 - y).try_into().unwrap())
-                    / factorial((2 * j32 + 1 + y).try_into().unwrap())
-                    * factorial((j11 + j21 - j32 + j33 - y - z).try_into().unwrap())
-                    / factorial(z.try_into().unwrap())
-                    / factorial((j11 + j21 - j31 - z).try_into().unwrap())
-                    * factorial((2 * j11 - z).try_into().unwrap())
-                    / factorial((j11 - j12 + j13 - z).try_into().unwrap())
-                    * factorial((j12 - j11 + j13 + z).try_into().unwrap())
-                    / factorial((j11 + j21 + j31 + 1 - z).try_into().unwrap());
+                sum += phase((x + y + z).try_into().unwrap()) * factorial((2 * j23 - x).into())
+                    / factorial(x.into())
+                    / factorial((j22 + j23 - x - j21).into())
+                    * factorial((j21 + j22 + x - j23).into())
+                    / factorial((j13 + j23 - j33 - x).into())
+                    / factorial((j21 + j32 + x + y - j23 - j12).into())
+                    * factorial((j13 + j33 + x - j23).into())
+                    / factorial((j12 + j33 + x + z - j11 - j23).into())
+                    / factorial(y.into())
+                    * factorial((j22 + j32 + y - j12).into())
+                    / factorial((j12 + j22 - j32 - y).into())
+                    * factorial((j31 + j32 + y - j33).into())
+                    / factorial((j31 + j33 - y - j32).into())
+                    / factorial((2 * j32 + 1 + y).into())
+                    * factorial((j11 + j21 + j33 - y - z - j32).into())
+                    / factorial(z.into())
+                    / factorial((j11 + j21 - j31 - z).into())
+                    * factorial((2 * j11 - z).into())
+                    / factorial((j11 + j13 - z - j12).into())
+                    * factorial((j12 + j13 + z - j11).into())
+                    / factorial((j11 + j21 + j31 + 1 - z).into());
             }
         }
     }
     prefactor * sum
 }
 
-fn delta(a: i32, b: i32, c: i32) -> f64 {
-    (factorial((a + c - b).try_into().unwrap()) * factorial((a - c + b).try_into().unwrap())
-        / factorial((a + c + b + 1).try_into().unwrap())
-        * factorial((-a + c + b).try_into().unwrap()))
+fn delta(a: u32, b: u32, c: u32) -> f64 {
+    println!("{}, {}, {}",a,b,c);
+    (factorial((a + c - b).into()) * factorial((a + b - c).into())
+        / factorial((a + c + b + 1).into())
+        * factorial((c + b - a).into()))
     .sqrt()
 }
 
-fn nabla(a: i32, b: i32, c: i32) -> f64 {
-    (factorial((a - b + c).try_into().unwrap()) * factorial((a + b - c).try_into().unwrap())
-        / factorial((b + c - a).try_into().unwrap())
-        * factorial((a + b + c + 1).try_into().unwrap()))
+fn nabla(a: u32, b: u32, c: u32) -> f64 {
+    (factorial((a - b + c).into()) * factorial((a + b - c).into()) / factorial((b + c - a).into())
+        * factorial((a + b + c + 1).into()))
     .sqrt()
 }
 
@@ -260,7 +260,7 @@ pub fn clebsch_gordan(uj1: u32, uj2: u32, uj3: u32, m1: i32, m2: i32, m3: i32) -
         return 0.0;
     }
 
-    if !is_triad(j1, j2, j3) {
+    if !is_triad(uj1, uj2, uj3) {
         return 0.0;
     }
 
@@ -326,11 +326,24 @@ pub fn clebsch_gordan(uj1: u32, uj2: u32, uj3: u32, m1: i32, m2: i32, m3: i32) -
     }
 }
 
-///Returns whether the given triplet of angular momenta form a triad
-fn is_triad(j1: i32, j2: i32, j3: i32) -> bool {
-    j3 >= (j1 - j2).abs() && j3 <= j1 + j2
+///Returns whether the given triplet of angular momenta form a triad.
+fn is_triad(j1: u32, j2: u32, j3: u32) -> bool {
+    j3 >= abs_diff(j1, j2) && j3 <= j1 + j2
 }
 
+///Returns the absolute value of the difference of the unsigned integers x and y.
+fn abs_diff<U>(x: U, y: U) -> U
+where
+    U: num::Unsigned + PartialOrd + std::ops::Sub<Output = U>,
+{
+    if x > y {
+        x - y
+    } else {
+        y - x
+    }
+}
+
+///Returns whether the given triplet of angular momenta form a triad.
 fn is_float_triad(j1: f32, j2: f32, j3: f32) -> bool {
     //normal triangle condition                j1 + j2 + j3 must be an integer
     j3 >= (j1 - j2).abs() && j3 <= j1 + j2 && (j1 + j1 + j3).fract() == 0.0

@@ -48,6 +48,13 @@ mod tests {
     use crate::wigner::wigner_small_d;
     use std::f64::consts::PI;
 
+    //We allow floating point errors on the scale of TOL.
+    //The answers we compare against are exact,
+    //but we use floats to compute the answers, so we will have
+    //errors due to the formulas for 3j symbols containing alternating
+    //products and divisions by large factorials.
+    const TOL: f64 = 100.0 * f64::EPSILON;
+
     #[test]
     fn test_bad_cgc_input() {
         assert_eq!(clebsch_gordan(1, 1, 0, 1, 1, 0), 0.0); //m3 != m1 + m2
@@ -92,13 +99,6 @@ mod tests {
 
         //The maximum values of the first two angular momenta.
         const MAXJ: u32 = 10;
-
-        //We allow floating point errors on the scale of TOL.
-        //The answers we compare against are exact,
-        //but we use floats to compute the answers, so we will have
-        //errors due to the formulas for 3j symbols containing alternating
-        //products and divisions by large factorials.
-        const TOL: f64 = 100.0 * f64::EPSILON;
 
         for j1 in 0..=MAXJ {
             for j2 in 0..=MAXJ {
@@ -152,5 +152,10 @@ mod tests {
     fn test_good_wigner_d_inputs() {
         assert_relative_eq!(wigner_d(2, 1, -1, PI / 2.0, PI, -PI / 2.0).unwrap().re, 1.0);
         assert_relative_eq!(wigner_d(2, 1, -1, PI / 2.0, PI, -PI / 2.0).unwrap().im, 0.0);
+    }
+
+    #[test]
+    fn test_good_6j_inputs() {
+        assert_relative_eq!( wigner_6j(1, 2, 3, 4, 5, 6),f64::sqrt(2.0/715.0)/3.0,epsilon=TOL);
     }
 }

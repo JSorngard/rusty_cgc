@@ -66,7 +66,7 @@ pub fn wigner_6j(j1: u32, j2: u32, j3: u32, j4: u32, j5: u32, j6: u32) -> f64 {
     let mut sum: f64 = 0.0;
     for z in 0..=u32::min(u32::min(2 * j4, j4 + j6 - j2), j4 + j3 - j5) {
         sum += factorial((2 * j4 - z).try_into().unwrap())
-            * factorial((j4 + j6 - j1 + j3 - z).try_into().unwrap())
+            * factorial((j4 + j6 + j3 - z - j1).try_into().unwrap())
             * factorial((j4 + j6 + j1 + j3 + 1 - z).try_into().unwrap())
             / factorial(z.try_into().unwrap())
             / factorial((j4 + j6 - z - j2).try_into().unwrap())

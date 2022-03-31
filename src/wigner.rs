@@ -80,15 +80,25 @@ pub fn wigner_6j(j1: u32, j2: u32, j3: u32, j4: u32, j5: u32, j6: u32) -> f64 {
 
 pub fn wigner_9j(
     j11: u32,
-    j21: u32,
-    j31: u32,
     j12: u32,
-    j22: u32,
-    j32: u32,
     j13: u32,
+    j21: u32,
+    j22: u32,
     j23: u32,
+    j31: u32,
+    j32: u32,
     j33: u32,
 ) -> f64 {
+
+    // let imax = [j11+j33,j12+j23,j21+j32].iter().min().unwrap()/2;
+    // let imin = imax % 2;
+    // let mut sumres = 0.0;
+    // for kk in (imin..=imax).step_by(2) {
+    //     sumres += ((kk+1) as f64)*racah_w(j11, j12, j33, j23, j12, kk/2)*racah_w(j21, j23, j32, j12, j31, kk/2)*racah_w(j11, j21, j33, j32, j31, kk/2)
+    // }
+    // return sumres;
+
+    println!("In function");
     //Check that all rows are triads
     if !is_triad(j11, j21, j31) || !is_triad(j12, j22, j32) || !is_triad(j13, j23, j33) {
         return 0.0;
@@ -99,22 +109,30 @@ pub fn wigner_9j(
         return 0.0;
     }
 
+    println!("Passed triad checks");
+
     let prefactor = phase((j13 + j23 - j33).try_into().unwrap()) * nabla(j21, j11, j31)
         / nabla(j21, j22, j23)
         * nabla(j12, j22, j32)
         / nabla(j12, j11, j13)
         * nabla(j33, j31, j32)
         / nabla(j33, j13, j23);
+    
+    println!("prefactor is {}", prefactor);
     let mut sum: f64 = 0.0;
-    for x in 0..=u32::min(u32::min(2 * j33, j22 - j21 + j23), j13 + j23 - j33) {
+    for x in 0..=u32::min(u32::min(2 * j33, j22 + j23 - j21), j13 + j23 - j33) {
+        println!("x = {}", x);
         for y in 0..=j31 + j33 - j32 {
+            println!(" y = {}", y);
             for z in
-                u32::max(((j11 as i64) - (j12 as i64) - (j13 as i64)) as u32, 0)..=(j11 + j13 - j12)
+                (i64::max(((j11 as i64) - (j12 as i64) - (j13 as i64)), 0) as u32)..=(j11 + j13 - j12)
             {
+                println!("  z = {}", z);
                 if j12 + j33 + x + z < j11 + j23 {
                     continue;
                 }
-
+                println!("   Computing for that");
+                println!("    fact({} - {})",j11 + j21, j31 + z);
                 sum += phase((x + y + z).try_into().unwrap()) * factorial((2 * j23 - x).into())
                     / factorial(x.into())
                     / factorial((j22 + j23 - x - j21).into())
@@ -139,7 +157,13 @@ pub fn wigner_9j(
             }
         }
     }
+    println!("sum is {}", sum);
     prefactor * sum
+}
+
+///Returns the value of the Racah W coefficient.
+pub fn racah_w(j1: u32, j2: u32, j: u32, j3: u32, j12: u32, j23: u32) -> f64 {
+    phase((j1+j2+j3+j).try_into().unwrap())*wigner_6j(j1, j2, j12, j3, j, j23)
 }
 
 fn delta(a: u32, b: u32, c: u32) -> f64 {

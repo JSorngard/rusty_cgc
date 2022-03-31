@@ -294,6 +294,16 @@ fn is_triad(j1: u32, j2: u32, j3: u32) -> bool {
     j3 >= abs_diff(j1, j2) && j3 <= j1 + j2
 }
 
+///Returns the result of adding an angular momentum to its projection. Panics if j < |m|.
+fn j_plus_m(j: u32, m: i32) -> u32 {
+    assert!(j >= (m.abs() as u32));
+    if m >= 0 {
+        j + (m as u32)
+    } else {
+        j - (-m as u32)
+    }
+}
+
 ///Returns the absolute value of the difference of the unsigned integers x and y.
 fn abs_diff<U>(x: U, y: U) -> U
 where

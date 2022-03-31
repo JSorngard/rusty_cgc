@@ -112,43 +112,6 @@ pub fn wigner_9j(
                 if j12 + j33 + x + z < j11 + j23 {
                     continue;
                 }
-                // if  j12 - j11 + j33 - j23 + x + z < 0 {
-                //     continue;
-                // }
-                // let numerator: f64 = vec![
-                //     2 * j23 - x,
-                //     j21 + j22 - j23 + x,
-                //     j13 - j23 + j33 + x,
-                //     j22 - j12 + j32 + y,
-                //     j31 + j32 - j33 + y,
-                //     j11 + j21 - j32 + j33 - y - z,
-                //     2 * j11 - z,
-                //     j12 - j11 + j13 + z,
-                // ]
-                // .into_iter()
-                // .map(|x| factorial(x.try_into().unwrap()))
-                // .product();
-                // let denominator: f64 = vec![
-                //     x,
-                //     j22 - j21 + j23 - x,
-                //     j13 + j23 - j33 - x,
-                //     j21 - j12 + j32 - j23 + x + y,
-                //     j12 - j11 - j23 + j33 + x + z,
-                //     y,
-                //     j12 + j22 - j32 - y,
-                //     j31 - j32 + j33 - y,
-                //     2 * j32 + 1 + y,
-                //     z,
-                //     j11 + j21 - j31 - z,
-                //     j11 - j12 + j13 - z,
-                //     j11 + j21 + j31 + 1 - z,
-                // ]
-                // .into_iter()
-                // .map(|x| factorial(x.try_into().unwrap()))
-                // .product();
-                // sum += if (x + y + z) % 2 == 1 { -1.0 } else { 1.0 } * numerator / denominator
-                /*println!("x={}, y={}, z={}", x, y, z);
-                println!("gives j11 + j21 - j31 - z = {}", j11 + j21 - j31 - z);*/
 
                 sum += phase((x + y + z).try_into().unwrap()) * factorial((2 * j23 - x).into())
                     / factorial(x.into())

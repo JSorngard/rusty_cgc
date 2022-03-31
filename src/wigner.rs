@@ -108,7 +108,9 @@ pub fn wigner_9j(
     let mut sum: f64 = 0.0;
     for x in 0..=u32::min(u32::min(2 * j33, j22 - j21 + j23), j13 + j23 - j33) {
         for y in 0..=j31 + j33 - j32 {
-            for z in u32::max(((j11 as i64) - (j12 as i64) - (j13 as i64)) as u32, 0)..=(j11 + j13 - j12) {
+            for z in
+                u32::max(((j11 as i64) - (j12 as i64) - (j13 as i64)) as u32, 0)..=(j11 + j13 - j12)
+            {
                 if j12 + j33 + x + z < j11 + j23 {
                     continue;
                 }
@@ -141,7 +143,7 @@ pub fn wigner_9j(
 }
 
 fn delta(a: u32, b: u32, c: u32) -> f64 {
-    println!("{}, {}, {}",a,b,c);
+    println!("{}, {}, {}", a, b, c);
     (factorial((a + c - b).into()) * factorial((a + b - c).into())
         / factorial((a + c + b + 1).into())
         * factorial((c + b - a).into()))
@@ -247,15 +249,24 @@ pub fn clebsch_gordan(j1: u32, j2: u32, j3: u32, m1: i32, m2: i32, m3: i32) -> f
             * factorial(j_plus_m(j3, -m3) as u64)
             / factorial(j_plus_m(j1, m1) as u64),
     );
-    
-    let mut ip1 = if m1 >= 0 {j2 + j3 + (m1 as u32)} else {j2 + j3 - (-m1 as u32)} - ni;//j2 + j3 + m1 - ni
+
+    let mut ip1 = if m1 >= 0 {
+        j2 + j3 + (m1 as u32)
+    } else {
+        j2 + j3 - (-m1 as u32)
+    } - ni; //j2 + j3 + m1 - ni
     let mut ip2 = j_plus_m(j1, -m1) + ni + 1;
     let mut ir1 = ni + 1;
     let mut ir2 = j3 + j2 - ni - j1;
     let mut ir3 = j_plus_m(j3, m3) - ni;
-    let mut ir4 = if m3 < 0 {j1 + ni + 1 + (-m3 as u32)} else {j1 + ni + 1 - (m3 as u32)} - j2;//j1 + ni + 1 - j2 - m3
-    //Same here: all inputs to the factorials will be >= 0, so casting to u64 loses no sign information
-    let mut s1 = phase((ni + j_plus_m(j2, m2)).try_into().unwrap()) * factorial(ip1 as u64) / factorial(ir2 as u64)
+    let mut ir4 = if m3 < 0 {
+        j1 + ni + 1 + (-m3 as u32)
+    } else {
+        j1 + ni + 1 - (m3 as u32)
+    } - j2; //j1 + ni + 1 - j2 - m3
+            //Same here: all inputs to the factorials will be >= 0, so casting to u64 loses no sign information
+    let mut s1 = phase((ni + j_plus_m(j2, m2)).try_into().unwrap()) * factorial(ip1 as u64)
+        / factorial(ir2 as u64)
         * factorial((ip2 - 1) as u64)
         / (factorial(ni as u64) * factorial(ir3 as u64) * factorial((ir4 - 1) as u64));
 

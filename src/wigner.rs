@@ -108,7 +108,7 @@ pub fn wigner_9j(
     let mut sum: f64 = 0.0;
     for x in 0..=u32::min(u32::min(2 * j33, j22 - j21 + j23), j13 + j23 - j33) {
         for y in 0..=j31 + j33 - j32 {
-            for z in u32::max(j11 - j12 - j13, 0)..=(j11 + j13 - j12) {
+            for z in u32::max(((j11 as i64) - (j12 as i64) - (j13 as i64)) as u32, 0)..=(j11 + j13 - j12) {
                 if j12 + j33 + x + z < j11 + j23 {
                     continue;
                 }

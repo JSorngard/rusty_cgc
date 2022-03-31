@@ -203,7 +203,7 @@ pub fn wigner_d(
 ///the given integer inputs. Returns 0.0 if the arguments are invalid.
 ///The first three inputs are the angular momentum quantum numbers,
 ///while the last three are the magnetic quantum numbers.
-pub fn clebsch_gordan(uj1: u32, uj2: u32, uj3: u32, m1: i32, m2: i32, m3: i32) -> f64 {
+pub fn clebsch_gordan(j1: u32, j2: u32, j3: u32, m1: i32, m2: i32, m3: i32) -> f64 {
     //Normal Fortran rules: variables beginning with
     //i,j,...,n are i32 and everything else is f32
     //Original Fortran code says: IMPLICIT REAL*8(A-H,O-Z)
@@ -211,19 +211,15 @@ pub fn clebsch_gordan(uj1: u32, uj2: u32, uj3: u32, m1: i32, m2: i32, m3: i32) -
     //This code is simply ported Fortran code,
     //as such it is not idiomatic rust.
 
-    let j1: i32 = uj1.try_into().unwrap();
-    let j2: i32 = uj2.try_into().unwrap();
-    let j3: i32 = uj3.try_into().unwrap();
-
     if m3 != m1 + m2 {
         return 0.0;
     }
 
-    if j1 < m1.abs() || j2 < m2.abs() || j3 < m3.abs() {
+    if j1 < (m1.abs() as u32) || j2 < (m2.abs() as u32) || j3 < (m3.abs() as u32) {
         return 0.0;
     }
 
-    if !is_triad(uj1, uj2, uj3) {
+    if !is_triad(j1, j2, j3) {
         return 0.0;
     }
 
@@ -232,10 +228,10 @@ pub fn clebsch_gordan(uj1: u32, uj2: u32, uj3: u32, m1: i32, m2: i32, m3: i32) -
     }
 
     let ia1 = j3 + j2 - j1;
-    let ia2 = j3 + m3;
-    let ia3 = j2 + m3 - j1;
+    let ia2 = j_plus_m(j3, m3);
+    let ia3: i64 = (j2 as i64) + (m3 as i64) - (j1 as i64);
 
-    let ni = if ia3 > 0 { ia3 } else { 0 };
+    let ni = if ia3 > 0 { ia3 as u32 } else { 0 };
     let nm = if ia2 <= ia1 { ia2 } else { ia1 };
 
     let cc = f64::sqrt(
@@ -244,22 +240,22 @@ pub fn clebsch_gordan(uj1: u32, uj2: u32, uj3: u32, m1: i32, m2: i32, m3: i32) -
             / factorial((j1 + j2 + j3 + 1) as u64)
             * factorial(ia1 as u64)
             * factorial((j1 + j2 - j3) as u64)
-            / factorial((j1 - m1) as u64)
-            / factorial((j2 - m2) as u64)
+            / factorial(j_plus_m(j1, -m1) as u64)
+            / factorial(j_plus_m(j2, -m2) as u64)
             * factorial(ia2 as u64)
-            / factorial((j2 + m2) as u64)
-            * factorial((j3 - m3) as u64)
-            / factorial((j1 + m1) as u64),
+            / factorial(j_plus_m(j2, m2) as u64)
+            * factorial(j_plus_m(j3, -m3) as u64)
+            / factorial(j_plus_m(j1, m1) as u64),
     );
-
-    let mut ip1 = j2 + j3 + m1 - ni;
-    let mut ip2 = j1 - m1 + ni + 1;
+    
+    let mut ip1 = if m1 >= 0 {j2 + j3 + (m1 as u32)} else {j2 + j3 - (-m1 as u32)} - ni;//j2 + j3 + m1 - ni
+    let mut ip2 = j_plus_m(j1, -m1) + ni + 1;
     let mut ir1 = ni + 1;
-    let mut ir2 = j3 - j1 + j2 - ni;
-    let mut ir3 = j3 + m3 - ni;
-    let mut ir4 = j1 - j2 - m3 + ni + 1;
+    let mut ir2 = j3 + j2 - ni - j1;
+    let mut ir3 = j_plus_m(j3, m3) - ni;
+    let mut ir4 = if m3 < 0 {j1 + ni + 1 + (-m3 as u32)} else {j1 + ni + 1 - (m3 as u32)} - j2;//j1 + ni + 1 - j2 - m3
     //Same here: all inputs to the factorials will be >= 0, so casting to u64 loses no sign information
-    let mut s1 = phase(ni + j2 + m2) * factorial(ip1 as u64) / factorial(ir2 as u64)
+    let mut s1 = phase((ni + j_plus_m(j2, m2)).try_into().unwrap()) * factorial(ip1 as u64) / factorial(ir2 as u64)
         * factorial((ip2 - 1) as u64)
         / (factorial(ni as u64) * factorial(ir3 as u64) * factorial((ir4 - 1) as u64));
 

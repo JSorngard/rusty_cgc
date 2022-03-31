@@ -186,7 +186,7 @@ fn delta(a: u32, b: u32, c: u32) -> f64 {
 }
 
 fn nabla(a: u32, b: u32, c: u32) -> f64 {
-    (factorial((a - b + c).into()) * factorial((a + b - c).into()) / factorial((b + c - a).into())
+    (factorial((a + c - b).into()) * factorial((a + b - c).into()) / factorial((b + c - a).into())
         * factorial((a + b + c + 1).into()))
     .sqrt()
 }

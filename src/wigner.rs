@@ -266,7 +266,11 @@ pub fn clebsch_gordan(j1: u32, j2: u32, j3: u32, m1: i32, m2: i32, m3: i32) -> R
     let ia2 = j_plus_m(j3, m3);
     let ia3: i64 = i64::from(j2) + i64::from(m3) - i64::from(j1);
 
-    let ni = if ia3 > 0 { u32::try_from(ia3).unwrap() } else { 0 };
+    let ni = if ia3 > 0 {
+        u32::try_from(ia3).unwrap()
+    } else {
+        0
+    };
     let nm = if ia2 <= ia1 { ia2 } else { ia1 };
 
     let cc = f64::sqrt(
@@ -298,7 +302,8 @@ pub fn clebsch_gordan(j1: u32, j2: u32, j3: u32, m1: i32, m2: i32, m3: i32) -> R
         j1 + ni + 1 - (m3 as u32)
     } - j2; //j1 + ni + 1 - j2 - m3
             //Same here: all inputs to the factorials will be >= 0, so casting to u64 loses no sign information
-    let mut s1 = phase(ni + j_plus_m(j2, m2)) * factorial(u64::from(ip1)) / factorial(u64::from(ir2))
+    let mut s1 = phase(ni + j_plus_m(j2, m2)) * factorial(u64::from(ip1))
+        / factorial(u64::from(ir2))
         * factorial(u64::from(ip2 - 1))
         / (factorial(u64::from(ni)) * factorial(u64::from(ir3)) * factorial(u64::from(ir4 - 1)));
 
@@ -336,11 +341,11 @@ fn is_triad(j1: u32, j2: u32, j3: u32) -> bool {
 ///Returns the result of adding an angular momentum to its projection.
 ///Debug_asserts that |m| <= j.
 fn j_plus_m(j: u32, m: i32) -> u32 {
-    debug_assert!(m.abs() as u32 <= j);
+    debug_assert!(u32::try_from(m.abs()).unwrap() <= j);
     if m >= 0 {
-        j + (m as u32)
+        j + u32::try_from(m).unwrap()
     } else {
-        j - (-m as u32)
+        j - u32::try_from(-m).unwrap()
     }
 }
 

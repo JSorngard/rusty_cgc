@@ -122,24 +122,15 @@ pub fn wigner_9j(
 
     println!("prefactor is {}", prefactor);
     let mut sum: f64 = 0.0;
-    for x in 0..=*[2 * j33, j22 + j23 - j21, j13 + j23 - j33]
-        .iter()
-        .min()
-        .unwrap()
-    //array is never empty
-    {
-        println!("x = {}", x);
-        for y in 0..=j31 + j33 - j32 {
-            println!(" y = {}", y);
-            for z in u32::try_from((i64::from(j11) - i64::from(j12) - i64::from(j13)).max(0))
-                .unwrap()..=(j11 + j13 - j12)
-            {
-                println!("  z = {}", z);
-                if j12 + j33 + x + z < j11 + j23 {
+    for x in 0..=(j22 + j23 - j21).min(j13 + j23 - j33) {
+        for y in 0..=(j31 + j33 - j32).min(j12 + j22 - j32) {
+            for z in 0..=(j11 + j13 - j12).min(j11 + j21 - j31) {
+                if j12 + j33 + x + z < j11 + j23
+                    || j21 + j32 + x + z < j12 + j23
+                    || j11 + j21 + j33 < j32 + y + z
+                {
                     continue;
                 }
-                println!("   Computing for that");
-                println!("    fact({} - {})", j11 + j21, j31 + z);
                 sum += phase(x + y + z) * factorial((2 * j23 - x).into())
                     / factorial(x.into())
                     / factorial((j22 + j23 - x - j21).into())

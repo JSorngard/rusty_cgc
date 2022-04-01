@@ -44,6 +44,7 @@ mod tests {
     use super::*;
     use crate::truths::return_3j_truths;
     use crate::wigner::clebsch_gordan;
+    use crate::wigner::gaunt;
     use crate::wigner::wigner_d;
     use crate::wigner::wigner_small_d;
     use std::f64::consts::PI;
@@ -167,5 +168,15 @@ mod tests {
     #[test]
     fn test_good_9j_inputs() {
         assert_relative_eq!(wigner_9j(2, 4, 6, 4, 6, 8, 6, 8, 10), -37903.0 / 97274034.0);
+    }
+
+    #[test]
+    fn test_good_gaunt_inputs() {
+        assert_relative_eq!(gaunt(1, 0, 1, 1, 0, -1), -1.0 / (2.0 * PI.sqrt()));
+        assert_relative_eq!(gaunt(2, 1, 1, 1, 0, -1), -0.5 * (3.0 / (5.0 * PI)).sqrt());
+        assert_relative_eq!(
+            gaunt(10, 4, 10, 2, 3, -5),
+            1323.0 * (91.0 / (2.0 * PI)).sqrt() / 37145.0
+        );
     }
 }

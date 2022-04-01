@@ -1,4 +1,5 @@
 use num::complex::Complex;
+use std::f64::consts::PI;
 
 ///Returns the value of the Wigner 3j symbol for the given integer inputs. Returns 0.0
 ///if the arguments are invalid. The first three inputs are the angular momentum quantum
@@ -89,7 +90,6 @@ pub fn wigner_9j(
     j32: u32,
     j33: u32,
 ) -> f64 {
-
     // let imax = [j11+j33,j12+j23,j21+j32].iter().min().unwrap()/2;
     // let imin = imax % 2;
     // let mut sumres = 0.0;
@@ -117,7 +117,7 @@ pub fn wigner_9j(
         / nabla(j12, j11, j13)
         * nabla(j33, j31, j32)
         / nabla(j33, j13, j23);
-    
+
     println!("prefactor is {}", prefactor);
     let mut sum: f64 = 0.0;
     for x in 0..=u32::min(u32::min(2 * j33, j22 + j23 - j21), j13 + j23 - j33) {
@@ -125,14 +125,14 @@ pub fn wigner_9j(
         for y in 0..=j31 + j33 - j32 {
             println!(" y = {}", y);
             for z in
-                (i64::max(((j11 as i64) - (j12 as i64) - (j13 as i64)), 0) as u32)..=(j11 + j13 - j12)
+                i64::max((j11 as i64) - (j12 as i64) - (j13 as i64), 0) as u32..=(j11 + j13 - j12)
             {
                 println!("  z = {}", z);
                 if j12 + j33 + x + z < j11 + j23 {
                     continue;
                 }
                 println!("   Computing for that");
-                println!("    fact({} - {})",j11 + j21, j31 + z);
+                println!("    fact({} - {})", j11 + j21, j31 + z);
                 sum += phase((x + y + z).try_into().unwrap()) * factorial((2 * j23 - x).into())
                     / factorial(x.into())
                     / factorial((j22 + j23 - x - j21).into())
@@ -163,7 +163,17 @@ pub fn wigner_9j(
 
 ///Returns the value of the Racah W coefficient.
 pub fn racah_w(j1: u32, j2: u32, j: u32, j3: u32, j12: u32, j23: u32) -> f64 {
-    phase((j1+j2+j3+j).try_into().unwrap())*wigner_6j(j1, j2, j12, j3, j, j23)
+    phase((j1 + j2 + j3 + j).try_into().unwrap()) * wigner_6j(j1, j2, j12, j3, j, j23)
+}
+
+///Returns the Gaunt coefficient for the input angular momenta.
+///The Gaunt coefficient is defined as the integral over three spherical harmonics.
+pub fn gaunt(l1: u32, l2: u32, l3: u32, m1: i32, m2: i32, m3: i32) -> f64 {
+    f64::sqrt(
+        (2.0 * (l1 as f64) + 1.0) * (2.0 * (l2 as f64) + 1.0) * (2.0 * (l3 as f64) + 1.0)
+            / (4.0 * PI),
+    ) * wigner_3j(l1, l2, l3, 0, 0, 0)
+        * wigner_3j(l1, l2, l3, m1, m2, m3)
 }
 
 fn delta(a: u32, b: u32, c: u32) -> f64 {

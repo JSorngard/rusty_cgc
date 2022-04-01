@@ -100,19 +100,16 @@ pub fn wigner_9j(
     j13: u32,
     j23: u32,
     j33: u32,
-) -> f64 {
-    println!("In function");
+) -> Result<f64, String> {
     //Check that all rows are triads
     if !is_triad(j11, j21, j31) || !is_triad(j12, j22, j32) || !is_triad(j13, j23, j33) {
-        return 0.0;
+        return Err("A row does not fulfill the triangle conditions".to_owned());
     }
 
     //Check that all columns are triads
     if !is_triad(j11, j12, j13) || !is_triad(j21, j22, j23) || !is_triad(j31, j32, j33) {
-        return 0.0;
+        return Err("A column does not fulfill the triangle conditions".to_owned());
     }
-
-    println!("Passed triad checks");
 
     let prefactor = phase(j13 + j23 - j33) * nabla(j21, j11, j31) / nabla(j21, j22, j23)
         * nabla(j12, j22, j32)
@@ -120,7 +117,6 @@ pub fn wigner_9j(
         * nabla(j33, j31, j32)
         / nabla(j33, j13, j23);
 
-    println!("prefactor is {}", prefactor);
     let mut sum: f64 = 0.0;
     for x in 0..=(j22 + j23 - j21).min(j13 + j23 - j33) {
         for y in 0..=(j31 + j33 - j32).min(j12 + j22 - j32) {
@@ -155,8 +151,7 @@ pub fn wigner_9j(
             }
         }
     }
-    println!("sum is {}", sum);
-    prefactor * sum
+    Ok(prefactor * sum)
 }
 
 ///Returns the value of the Racah W coefficient.

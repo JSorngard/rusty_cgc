@@ -33,8 +33,8 @@ fn main() {
     );
 
     println!("{}", wigner_6j(1, 2, 3, 4, 5, 6));
-    println!("{}", wigner_9j(2, 4, 6, 4, 6, 8, 6, 8, 10));
-    println!("{}", wigner_9j(1, 2, 3, 1, 2, 3, 2, 4, 6));
+    println!("{}", wigner_9j(2, 4, 6, 4, 6, 8, 6, 8, 10).unwrap());
+    println!("{}", wigner_9j(1, 2, 3, 1, 2, 3, 2, 4, 6).unwrap());
 }
 
 #[cfg(test)]
@@ -187,8 +187,43 @@ mod tests {
     }
 
     #[test]
+    fn test_bad_9j_inputs() {
+        assert!(wigner_9j(0, 0, 0, 0, 9, 0, 0, 0, 0).is_err());
+        assert!(wigner_9j(100, 4, 6, 4, 6, 8, 6, 8, 10).is_err());
+        assert!(wigner_9j(2, 4, 6, 4, 6, 8, 6, 8, 100).is_err());
+    }
+
+    #[test]
     fn test_good_9j_inputs() {
-        assert_relative_eq!(wigner_9j(2, 4, 6, 4, 6, 8, 6, 8, 10), -37903.0 / 97274034.0);
+        assert_relative_eq!(
+            wigner_9j(2, 4, 6, 4, 6, 8, 6, 8, 10).unwrap(),
+            -37903.0 / 97274034.0
+        );
+        assert_relative_eq!(
+            wigner_9j(2, 4, 6, 4, 6, 8, 6, 8, 9).unwrap(),
+            199.0 / 1907334.0
+        );
+        assert_relative_eq!(
+            wigner_9j(1, 2, 3, 2, 3, 4, 3, 4, 5).unwrap(),
+            -61.0 / 66150.0
+        );
+        assert_relative_eq!(
+            wigner_9j(1, 3, 2, 2, 3, 1, 2, 1, 3).unwrap(),
+            -4.0 / 315.0 * f64::sqrt(2.0 / 35.0)
+        );
+        assert_relative_eq!(
+            wigner_9j(1, 1, 2, 1, 1, 1, 2, 1, 1).unwrap(),
+            -1.0/45.0
+        );
+        //These tests fail. Do not use 9j function for "large" values of j.
+        // assert_relative_eq!(
+        //     wigner_9j(10, 11, 12, 11, 12, 13, 12, 13, 14).unwrap(),
+        //     1.0/31648909588721100.0
+        // );
+        // assert_relative_eq!(
+        //     wigner_9j(11, 12, 13, 12, 13, 14, 13, 14, 15).unwrap(),
+        //     -26976629723.0/599200846745523750.0
+        // );
     }
 
     #[test]

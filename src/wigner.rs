@@ -132,7 +132,7 @@ pub fn wigner_9j(
                     / factorial((j22 + j23 - x - j21).into())
                     * factorial((j21 + j22 + x - j23).into())
                     / factorial((j13 + j23 - j33 - x).into())
-                    / factorial((j21 + j32 + x + y - j23 - j12).into())
+                    / factorial((j21 + j32 + x + y - j23 - j12).into())//fails with overflow for some inputs
                     * factorial((j13 + j33 + x - j23).into())
                     / factorial((j12 + j33 + x + z - j11 - j23).into())
                     / factorial(y.into())

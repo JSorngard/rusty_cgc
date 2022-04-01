@@ -63,7 +63,7 @@ pub fn wigner_6j(j1: u32, j2: u32, j3: u32, j4: u32, j5: u32, j6: u32) -> f64 {
         * factorial((j4 + j5 + j3 + 1).try_into().unwrap())
         / factorial((j1 + j3 - j2).try_into().unwrap())
         / factorial((j4 + j5 - j3).try_into().unwrap())
-        * phase((j4 + j6 + j1 + j3).try_into().unwrap());
+        * phase(j4 + j6 + j1 + j3);
     let mut sum: f64 = 0.0;
     for z in 0..=u32::min(u32::min(2 * j4, j4 + j6 - j2), j4 + j3 - j5) {
         sum += factorial((2 * j4 - z).try_into().unwrap())
@@ -74,7 +74,7 @@ pub fn wigner_6j(j1: u32, j2: u32, j3: u32, j4: u32, j5: u32, j6: u32) -> f64 {
             / factorial((j4 + j3 - z - j5).try_into().unwrap())
             / factorial((j2 + j4 + j6 + 1 - z).try_into().unwrap())
             / factorial((j4 + j5 + j3 + 1 - z).try_into().unwrap())
-            * phase(z.try_into().unwrap());
+            * phase(z);
     }
     sum * fac
 }
@@ -111,7 +111,7 @@ pub fn wigner_9j(
 
     println!("Passed triad checks");
 
-    let prefactor = phase((j13 + j23 - j33).try_into().unwrap()) * nabla(j21, j11, j31)
+    let prefactor = phase(j13 + j23 - j33) * nabla(j21, j11, j31)
         / nabla(j21, j22, j23)
         * nabla(j12, j22, j32)
         / nabla(j12, j11, j13)
@@ -133,7 +133,7 @@ pub fn wigner_9j(
                 }
                 println!("   Computing for that");
                 println!("    fact({} - {})", j11 + j21, j31 + z);
-                sum += phase((x + y + z).try_into().unwrap()) * factorial((2 * j23 - x).into())
+                sum += phase(x + y + z) * factorial((2 * j23 - x).into())
                     / factorial(x.into())
                     / factorial((j22 + j23 - x - j21).into())
                     * factorial((j21 + j22 + x - j23).into())
@@ -163,7 +163,7 @@ pub fn wigner_9j(
 
 ///Returns the value of the Racah W coefficient.
 pub fn racah_w(j1: u32, j2: u32, j: u32, j3: u32, j12: u32, j23: u32) -> f64 {
-    phase((j1 + j2 + j3 + j).try_into().unwrap()) * wigner_6j(j1, j2, j12, j3, j, j23)
+    phase(j1 + j2 + j3 + j) * wigner_6j(j1, j2, j12, j3, j, j23)
 }
 
 ///Returns the Gaunt coefficient for the input angular momenta.
@@ -211,7 +211,7 @@ pub fn wigner_small_d(j: i32, mp: i32, m: i32, beta: f64) -> Result<f64, String>
                 * factorial(s.try_into().unwrap())
                 * factorial((mp - m + s).try_into().unwrap())
                 * factorial((j - mp - s).try_into().unwrap()))
-            * phase(mp - m + s);
+            * phase((mp - m + s).abs() as u32);//(-1)^x = (-1)^(-x) if x is real, and a positive i32 always fits in a u32.
     }
     Ok(sum * prefactor)
 }
@@ -299,7 +299,7 @@ pub fn clebsch_gordan(j1: u32, j2: u32, j3: u32, m1: i32, m2: i32, m3: i32) -> f
         j1 + ni + 1 - (m3 as u32)
     } - j2; //j1 + ni + 1 - j2 - m3
             //Same here: all inputs to the factorials will be >= 0, so casting to u64 loses no sign information
-    let mut s1 = phase((ni + j_plus_m(j2, m2)).try_into().unwrap()) * factorial(ip1 as u64)
+    let mut s1 = phase(ni + j_plus_m(j2, m2)) * factorial(ip1 as u64)
         / factorial(ir2 as u64)
         * factorial((ip2 - 1) as u64)
         / (factorial(ni as u64) * factorial(ir3 as u64) * factorial((ir4 - 1) as u64));
@@ -377,7 +377,7 @@ fn factorial(n: u64) -> f64 {
 }
 
 ///Returns an f64 with a value of 1.0 if the input is even, and -1.0 if it is odd
-fn phase(x: i32) -> f64 {
+fn phase(x: u32) -> f64 {
     if x % 2 == 0 {
         1.0
     } else {

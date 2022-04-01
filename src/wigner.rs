@@ -100,14 +100,6 @@ pub fn wigner_9j(
     j32: u32,
     j33: u32,
 ) -> f64 {
-    // let imax = [j11+j33,j12+j23,j21+j32].iter().min().unwrap()/2;
-    // let imin = imax % 2;
-    // let mut sumres = 0.0;
-    // for kk in (imin..=imax).step_by(2) {
-    //     sumres += ((kk+1) as f64)*racah_w(j11, j12, j33, j23, j12, kk/2)*racah_w(j21, j23, j32, j12, j31, kk/2)*racah_w(j11, j21, j33, j32, j31, kk/2)
-    // }
-    // return sumres;
-
     println!("In function");
     //Check that all rows are triads
     if !is_triad(j11, j21, j31) || !is_triad(j12, j22, j32) || !is_triad(j13, j23, j33) {
@@ -190,14 +182,20 @@ pub fn gaunt(l1: u32, l2: u32, l3: u32, m1: i32, m2: i32, m3: i32) -> Result<f64
         * wigner_3j(l1, l2, l3, m1, m2, m3).unwrap())
 }
 
+///Returns the value of the triangle coefficient \Delta(abc) used in the computation of 6j and 9j symbols.
+///The inputs are debug_asserted to be triangular.
 fn delta(a: u32, b: u32, c: u32) -> f64 {
+    debug_assert!(a + c >= b && a + b >= c && b + c >= a);
     (factorial((a + c - b).into()) * factorial((a + b - c).into())
         / factorial((a + c + b + 1).into())
         * factorial((c + b - a).into()))
     .sqrt()
 }
 
+///Returns the value of the \nabla(abc) triangle coefficient used in the computation of 9j symbols.
+///The inputs are debug_asserted to be triangular.
 fn nabla(a: u32, b: u32, c: u32) -> f64 {
+    debug_assert!(a + c >= b && a + b >= c && b + c >= a);
     (factorial((a + c - b).into()) * factorial((a + b - c).into()) / factorial((b + c - a).into())
         * factorial((a + b + c + 1).into()))
     .sqrt()
@@ -205,26 +203,26 @@ fn nabla(a: u32, b: u32, c: u32) -> f64 {
 
 ///Returns the value of the small Wigner d-matrix in the z-y-z convention.
 ///If the input is not valid it returns an error instead.
-pub fn wigner_small_d(j: i32, mp: i32, m: i32, beta: f64) -> Result<f64, String> {
-    if mp.abs() > j || m.abs() > j {
+pub fn wigner_small_d(j: u32, mp: i32, m: i32, beta: f64) -> Result<f64, String> {
+    if mp.abs() as u32 > j || m.abs() as u32 > j {
         return Err("m-values can not be larger than j".to_owned());
     }
 
     let prefactor = f64::sqrt(
-        factorial((j + mp).try_into().unwrap())
-            * factorial((j - mp).try_into().unwrap())
-            * factorial((j + m).try_into().unwrap())
-            * factorial((j - m).try_into().unwrap()),
+        factorial(j_plus_m(j, mp).into())
+            * factorial(j_plus_m(j, -mp).into())
+            * factorial(j_plus_m(j, m).into())
+            * factorial(j_plus_m(j, -m).into()),
     );
     let mut sum: f64 = 0.0;
-    for s in i32::max(0, m - mp)..=i32::min(j + m, j - mp) {
-        sum += f64::powf((beta / 2.0).cos(), (2 * j + m - mp - 2 * s).into())
-            * f64::powf((beta / 2.0).sin(), (mp - m + 2 * s).into())
-            / (factorial((j + m - s).try_into().unwrap())
+    for s in (i32::max(0, m - mp) as u32)..=u32::min(j_plus_m(j, m), j_plus_m(j, -mp)) {
+        sum += f64::powf((beta / 2.0).cos(), (j_plus_m(j, m) + j_plus_m(j, -mp) - 2 * s).into())//(2 * j + m - mp)
+            * f64::powf((beta / 2.0).sin(), (2 * s + u32::try_from(mp - m).unwrap()).into())
+            / (factorial((j_plus_m(j, m) - s).try_into().unwrap())
                 * factorial(s.try_into().unwrap())
-                * factorial((mp - m + s).try_into().unwrap())
-                * factorial((j - mp - s).try_into().unwrap()))
-            * phase((mp - m + s).abs() as u32); //(-1)^x = (-1)^(-x) if x is real, and a positive i32 always fits in a u32.
+                * factorial((s + u32::try_from(mp - m).unwrap()).try_into().unwrap())
+                * factorial((j_plus_m(j, -mp) - s).try_into().unwrap()))
+            * phase(s + u32::try_from(mp - m).unwrap()); //(-1)^x = (-1)^(-x) if x is real, and a positive i32 always fits in a u32.
     }
     Ok(sum * prefactor)
 }
@@ -232,7 +230,7 @@ pub fn wigner_small_d(j: i32, mp: i32, m: i32, beta: f64) -> Result<f64, String>
 ///Returns the value of the Wigner D-matrix in the z-y-z convention.
 ///If the input is not valid it returns an error instead.
 pub fn wigner_d(
-    j: i32,
+    j: u32,
     mp: i32,
     m: i32,
     alpha: f64,
@@ -341,7 +339,7 @@ fn is_triad(j1: u32, j2: u32, j3: u32) -> bool {
 }
 
 ///Returns the result of adding an angular momentum to its projection.
-///Assumes that |m| <= j.
+///Debug_asserts that |m| <= j.
 fn j_plus_m(j: u32, m: i32) -> u32 {
     debug_assert!(m.abs() as u32 <= j);
     if m >= 0 {

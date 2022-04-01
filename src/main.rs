@@ -12,6 +12,9 @@ fn main() {
             for j3 in ((j1 as i32) - (j2 as i32)).abs() as u32..=j1 + j2 {
                 for m1 in -(j1 as i32)..=j1 as i32 {
                     for m2 in -(j2 as i32)..=j2 as i32 {
+                        if (m1 + m2).abs() as u32 > j3 {
+                            continue;
+                        }
                         acc += wigner_3j(j1, j2, j3, m1, m2, -m1 - m2).unwrap();
                     }
                 }

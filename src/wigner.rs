@@ -54,13 +54,13 @@ fn reorder3j(
     }
 }
 
-pub fn wigner_6j(j1: u32, j2: u32, j3: u32, j4: u32, j5: u32, j6: u32) -> f64 {
+pub fn wigner_6j(j1: u32, j2: u32, j3: u32, j4: u32, j5: u32, j6: u32) -> Result<f64, String> {
     if !is_triad(j1, j2, j3)
         || !is_triad(j1, j5, j6)
         || !is_triad(j4, j2, j6)
         || !is_triad(j4, j5, j3)
     {
-        return 0.0;
+        return Err("the inputs do not fulfill the required triangle conditions".to_owned());
     }
 
     //The arguments to the factorials should always be positive
@@ -87,7 +87,7 @@ pub fn wigner_6j(j1: u32, j2: u32, j3: u32, j4: u32, j5: u32, j6: u32) -> f64 {
             / factorial((j4 + j5 + j3 + 1 - z).into())
             * phase(z);
     }
-    sum * fac
+    Ok(sum * fac)
 }
 
 pub fn wigner_9j(
@@ -155,8 +155,12 @@ pub fn wigner_9j(
 }
 
 ///Returns the value of the Racah W coefficient.
-pub fn racah_w(j1: u32, j2: u32, j: u32, j3: u32, j12: u32, j23: u32) -> f64 {
-    phase(j1 + j2 + j3 + j) * wigner_6j(j1, j2, j12, j3, j, j23)
+pub fn racah_w(j1: u32, j2: u32, j: u32, j3: u32, j12: u32, j23: u32) -> Result<f64, String> {
+    Ok(phase(j1 + j2 + j3 + j)
+        * match wigner_6j(j1, j2, j12, j3, j, j23) {
+            Ok(x) => x,
+            Err(e) => return Err(e),
+        })
 }
 
 ///Returns the Gaunt coefficient for the input angular momenta.

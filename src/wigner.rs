@@ -5,8 +5,9 @@ use std::f64::consts::PI;
 ///if the arguments are invalid. The first three inputs are the angular momentum quantum
 ///numbers, while the last three are the magnetic quantum numbers.
 pub fn wigner_3j(j1: u32, j2: u32, j3: u32, m1: i32, m2: i32, m3: i32) -> Result<f64, String> {
-    
-    if let Some(e) = is_unphysical(j1, j2, j3, m1, m2, -m3) { return Err(e) };
+    if let Some(e) = is_unphysical(j1, j2, j3, m1, m2, -m3) {
+        return Err(e);
+    };
 
     let (j1, j2, j3, m1, m2, m3, mut sign) = reorder3j(j1, j2, j3, m1, m2, m3, 1.0);
 
@@ -109,8 +110,7 @@ pub fn wigner_9j(
         return Err("A column does not fulfill the triangle conditions".to_owned());
     }
 
-    let prefactor = phase(j7 + j8 - j9) * nabla(j2, j1, j3) / nabla(j2, j5, j8)
-        * nabla(j4, j5, j6)
+    let prefactor = phase(j7 + j8 - j9) * nabla(j2, j1, j3) / nabla(j2, j5, j8) * nabla(j4, j5, j6)
         / nabla(j4, j1, j7)
         * nabla(j9, j3, j6)
         / nabla(j9, j7, j8);
@@ -164,8 +164,9 @@ pub fn racah_w(j1: u32, j2: u32, j: u32, j3: u32, j12: u32, j23: u32) -> Result<
 ///Returns the Gaunt coefficient for the input angular momenta.
 ///The Gaunt coefficient is defined as the integral over three spherical harmonics.
 pub fn gaunt(l1: u32, l2: u32, l3: u32, m1: i32, m2: i32, m3: i32) -> Result<f64, String> {
-    
-    if let Some(e) = is_unphysical(l1, l2, l3, m1, m2, -m3) { return Err(e) };
+    if let Some(e) = is_unphysical(l1, l2, l3, m1, m2, -m3) {
+        return Err(e);
+    };
 
     Ok(f64::sqrt(
         (2.0 * (l1 as f64) + 1.0) * (2.0 * (l2 as f64) + 1.0) * (2.0 * (l3 as f64) + 1.0)
@@ -245,7 +246,9 @@ pub fn clebsch_gordan(j1: u32, j2: u32, j3: u32, m1: i32, m2: i32, m3: i32) -> R
     //This code is simply ported Fortran code,
     //as such it is not completely idiomatic rust.
 
-    if let Some(e) = is_unphysical(j1, j2, j3, m1, m2, m3) { return Err(e) };
+    if let Some(e) = is_unphysical(j1, j2, j3, m1, m2, m3) {
+        return Err(e);
+    };
 
     if m1.abs() + m2.abs() == 0 && (j1 + j2 + j3) % 2 == 1 {
         return Ok(0.0);

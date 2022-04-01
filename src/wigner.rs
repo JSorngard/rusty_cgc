@@ -63,27 +63,28 @@ pub fn wigner_6j(j1: u32, j2: u32, j3: u32, j4: u32, j5: u32, j6: u32) -> f64 {
         return 0.0;
     }
 
-    let fac = delta(j2, j4, j6) * delta(j2, j1, j3) / factorial((j2 + j4 - j6).try_into().unwrap())
+    //The arguments to the factorials should always be positive
+    let fac = delta(j2, j4, j6) * delta(j2, j1, j3) / factorial((j2 + j4 - j6).into())
         * delta(j6, j5, j1)
-        / factorial((j6 + j1 - j5).try_into().unwrap())
-        * factorial((j2 + j4 + j6 + 1).try_into().unwrap())
-        / factorial((j6 + j5 - j1).try_into().unwrap())
+        / factorial((j6 + j1 - j5).into())
+        * factorial((j2 + j4 + j6 + 1).into())
+        / factorial((j6 + j5 - j1).into())
         * delta(j4, j5, j3)
-        / factorial((j2 + j3 - j1).try_into().unwrap())
-        * factorial((j4 + j5 + j3 + 1).try_into().unwrap())
-        / factorial((j1 + j3 - j2).try_into().unwrap())
-        / factorial((j4 + j5 - j3).try_into().unwrap())
+        / factorial((j2 + j3 - j1).into())
+        * factorial((j4 + j5 + j3 + 1).into())
+        / factorial((j1 + j3 - j2).into())
+        / factorial((j4 + j5 - j3).into())
         * phase(j4 + j6 + j1 + j3);
     let mut sum: f64 = 0.0;
     for z in 0..=u32::min(u32::min(2 * j4, j4 + j6 - j2), j4 + j3 - j5) {
-        sum += factorial((2 * j4 - z).try_into().unwrap())
-            * factorial((j4 + j6 + j3 - z - j1).try_into().unwrap())
-            * factorial((j4 + j6 + j1 + j3 + 1 - z).try_into().unwrap())
-            / factorial(z.try_into().unwrap())
-            / factorial((j4 + j6 - z - j2).try_into().unwrap())
-            / factorial((j4 + j3 - z - j5).try_into().unwrap())
-            / factorial((j2 + j4 + j6 + 1 - z).try_into().unwrap())
-            / factorial((j4 + j5 + j3 + 1 - z).try_into().unwrap())
+        sum += factorial((2 * j4 - z).into())
+            * factorial((j4 + j6 + j3 - z - j1).into())
+            * factorial((j4 + j6 + j1 + j3 + 1 - z).into())
+            / factorial(z.into())
+            / factorial((j4 + j6 - z - j2).into())
+            / factorial((j4 + j3 - z - j5).into())
+            / factorial((j2 + j4 + j6 + 1 - z).into())
+            / factorial((j4 + j5 + j3 + 1 - z).into())
             * phase(z);
     }
     sum * fac
@@ -121,7 +122,7 @@ pub fn wigner_9j(
 
     println!("prefactor is {}", prefactor);
     let mut sum: f64 = 0.0;
-    for x in 0..=u32::min(u32::min(2 * j33, j22 + j23 - j21), j13 + j23 - j33) {
+    for x in 0..=*[2*j33, j22 + j23 - j21, j13 + j23 - j33].iter().min().unwrap() {
         println!("x = {}", x);
         for y in 0..=j31 + j33 - j32 {
             println!(" y = {}", y);
@@ -275,16 +276,16 @@ pub fn clebsch_gordan(j1: u32, j2: u32, j3: u32, m1: i32, m2: i32, m3: i32) -> R
 
     let cc = f64::sqrt(
         //All inputs to the factorials will be >= 0, so casting to u64 loses no sign information
-        f64::from(2 * j3 + 1) * factorial(u64::from(j3 + j1 - j2))
-            / factorial(u64::from(j1 + j2 + j3 + 1))
-            * factorial(u64::from(ia1))
-            * factorial(u64::from(j1 + j2 - j3))
-            / factorial(u64::from(j_plus_m(j1, -m1)))
-            / factorial(u64::from(j_plus_m(j2, -m2)))
-            * factorial(u64::from(ia2))
-            / factorial(u64::from(j_plus_m(j2, m2)))
-            * factorial(u64::from(j_plus_m(j3, -m3)))
-            / factorial(u64::from(j_plus_m(j1, m1))),
+        f64::from(2 * j3 + 1) * factorial((j3 + j1 - j2).into())
+            / factorial((j1 + j2 + j3 + 1).into())
+            * factorial(ia1.into())
+            * factorial((j1 + j2 - j3).into())
+            / factorial(j_plus_m(j1, -m1).into())
+            / factorial(j_plus_m(j2, -m2).into())
+            * factorial(ia2.into())
+            / factorial(j_plus_m(j2, m2).into())
+            * factorial(j_plus_m(j3, -m3).into())
+            / factorial(j_plus_m(j1, m1).into()),
     );
 
     let mut ip1 = if m1 >= 0 {
@@ -302,10 +303,10 @@ pub fn clebsch_gordan(j1: u32, j2: u32, j3: u32, m1: i32, m2: i32, m3: i32) -> R
         j1 + ni + 1 - (m3 as u32)
     } - j2; //j1 + ni + 1 - j2 - m3
             //Same here: all inputs to the factorials will be >= 0, so casting to u64 loses no sign information
-    let mut s1 = phase(ni + j_plus_m(j2, m2)) * factorial(u64::from(ip1))
-        / factorial(u64::from(ir2))
-        * factorial(u64::from(ip2 - 1))
-        / (factorial(u64::from(ni)) * factorial(u64::from(ir3)) * factorial(u64::from(ir4 - 1)));
+    let mut s1 = phase(ni + j_plus_m(j2, m2)) * factorial(ip1.into())
+        / factorial(ir2.into())
+        * factorial((ip2 - 1).into())
+        / (factorial(ni.into()) * factorial(ir3.into()) * factorial((ir4 - 1).into()));
 
     let n = nm - ni;
     let mut fa;

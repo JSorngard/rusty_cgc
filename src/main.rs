@@ -12,7 +12,7 @@ fn main() {
             for j3 in ((j1 as i32) - (j2 as i32)).abs() as u32..=j1 + j2 {
                 for m1 in -(j1 as i32)..=j1 as i32 {
                     for m2 in -(j2 as i32)..=j2 as i32 {
-                        acc += wigner_3j(j1, j2, j3, m1, m2, -m1 - m2);
+                        acc += wigner_3j(j1, j2, j3, m1, m2, -m1 - m2).unwrap();
                     }
                 }
             }
@@ -58,35 +58,48 @@ mod tests {
 
     #[test]
     fn test_bad_cgc_input() {
-        assert_eq!(clebsch_gordan(1, 1, 0, 1, 1, 0), 0.0); //m3 != m1 + m2
-        assert_eq!(clebsch_gordan(1, 2, 0, 0, 0, 0), 0.0); //|m1| > j1
-        assert_eq!(clebsch_gordan(2, 2, 5, 0, -1, -1), 0.0); //non-triangular
-        assert_eq!(clebsch_gordan(1, 1, 1, 0, 0, 0), 0.0); //all ms 0 => j3 must be even
+        assert!(clebsch_gordan(1, 1, 0, 1, 1, 0).is_err()); //m3 != m1 + m2
+        assert!(clebsch_gordan(1, 2, 0, 0, 0, 0).is_err()); //|m1| > j1
+        assert!(clebsch_gordan(2, 2, 5, 0, -1, -1).is_err()); //non-triangular
+        assert_eq!(clebsch_gordan(1, 1, 1, 0, 0, 0).unwrap(), 0.0); //all ms 0 => j3 must be even
     }
 
     #[test]
     fn test_good_cgc_input() {
-        assert_relative_eq!(clebsch_gordan(5, 5, 0, 1, -1, 0), f64::sqrt(1.0 / 11.0));
-        assert_relative_eq!(clebsch_gordan(1, 2, 1, 1, -1, 0), f64::sqrt(3.0 / 10.0));
-        assert_relative_eq!(clebsch_gordan(1, 1, 0, 1, -1, 0), f64::sqrt(1.0 / 3.0));
-        assert_relative_eq!(clebsch_gordan(1, 2, 3, 1, 2, 3), 1.0);
+        assert_relative_eq!(
+            clebsch_gordan(5, 5, 0, 1, -1, 0).unwrap(),
+            f64::sqrt(1.0 / 11.0)
+        );
+        assert_relative_eq!(
+            clebsch_gordan(1, 2, 1, 1, -1, 0).unwrap(),
+            f64::sqrt(3.0 / 10.0)
+        );
+        assert_relative_eq!(
+            clebsch_gordan(1, 1, 0, 1, -1, 0).unwrap(),
+            f64::sqrt(1.0 / 3.0)
+        );
+        assert_relative_eq!(clebsch_gordan(1, 2, 3, 1, 2, 3).unwrap(), 1.0);
     }
 
     #[test]
     fn test_bad_3j_input() {
-        assert_eq!(wigner_3j(1, 1, 0, 1, 1, 0), 0.0); //m3 != m1 + m2
-        assert_eq!(wigner_3j(1, 2, 0, 0, 0, 0), 0.0); //|m| > j
-        assert_eq!(wigner_3j(2, 2, 5, 0, 0, 0), 0.0); //non-triangular
-        assert_eq!(wigner_3j(1, 1, 1, 0, 0, 0), 0.0); //all ms = 0 => j3 must be even
+        assert!(wigner_3j(1, 1, 0, 1, 1, 0).is_err()); //m3 != m1 + m2
+        assert!(wigner_3j(1, 2, 0, 0, 0, 0).is_err()); //|m| > j
+        assert!(wigner_3j(2, 2, 5, 0, 0, 0).is_err()); //non-triangular
+        assert_eq!(wigner_3j(1, 1, 1, 0, 0, 0).unwrap(), 0.0); //all ms = 0 => j3 must be even
     }
 
     #[test]
     fn test_good_3j_input() {
-        assert_relative_eq!(wigner_3j(1, 1, 0, 0, 0, 0), -f64::sqrt(1.0 / 3.0));
-        assert_relative_eq!(wigner_3j(1, 1, 2, -1, 1, 0), f64::sqrt(1.0 / 30.0));
-        assert_relative_eq!(wigner_3j(1, 2, 3, 1, 2, -3), f64::sqrt(1.0 / 7.0));
+        println!("1");
+        assert_relative_eq!(wigner_3j(1, 1, 0, 0, 0, 0).unwrap(), -f64::sqrt(1.0 / 3.0));
+        println!("2");
+        assert_relative_eq!(wigner_3j(1, 1, 2, -1, 1, 0).unwrap(), f64::sqrt(1.0 / 30.0));
+        println!("3");
+        assert_relative_eq!(wigner_3j(1, 2, 3, 1, 2, -3).unwrap(), f64::sqrt(1.0 / 7.0));
+        println!("4");
         assert_relative_eq!(
-            wigner_3j(10, 10, 9, 5, 4, -9),
+            wigner_3j(10, 10, 9, 5, 4, -9).unwrap(),
             11.0 / 3.0 * f64::sqrt(91.0 / 126730.0)
         );
     }
@@ -106,6 +119,10 @@ mod tests {
                 for j3 in ((j1 as i32) - (j2 as i32)).abs() as u32..=j1 + j2 {
                     for m1 in -(j1 as i32)..=j1 as i32 {
                         for m2 in -(j2 as i32)..=j2 as i32 {
+                            if (m1 + m2).abs() as u32 > j3 {
+                                continue;
+                            }
+
                             let s = format!(
                                 "(({}, {}), ({}, {}), ({}, {}))",
                                 j1,
@@ -115,9 +132,10 @@ mod tests {
                                 j3,
                                 -m1 - m2
                             );
+
                             println!("{}", s);
                             assert_relative_eq!(
-                                wigner_3j(j1, j2, j3, m1, m2, -m1 - m2),
+                                wigner_3j(j1, j2, j3, m1, m2, -m1 - m2).unwrap(),
                                 threej_truths[s.as_str()],
                                 epsilon = TOL,
                             );
@@ -172,10 +190,13 @@ mod tests {
 
     #[test]
     fn test_good_gaunt_inputs() {
-        assert_relative_eq!(gaunt(1, 0, 1, 1, 0, -1), -1.0 / (2.0 * PI.sqrt()));
-        assert_relative_eq!(gaunt(2, 1, 1, 1, 0, -1), -0.5 * (3.0 / (5.0 * PI)).sqrt());
+        assert_relative_eq!(gaunt(1, 0, 1, 1, 0, -1).unwrap(), -1.0 / (2.0 * PI.sqrt()));
         assert_relative_eq!(
-            gaunt(10, 4, 10, 2, 3, -5),
+            gaunt(2, 1, 1, 1, 0, -1).unwrap(),
+            -0.5 * (3.0 / (5.0 * PI)).sqrt()
+        );
+        assert_relative_eq!(
+            gaunt(10, 4, 10, 2, 3, -5).unwrap(),
             1323.0 * (91.0 / (2.0 * PI)).sqrt() / 37145.0
         );
     }

@@ -4,14 +4,24 @@ use std::f64::consts::PI;
 ///Returns the value of the Wigner 3j symbol for the given integer inputs. Returns 0.0
 ///if the arguments are invalid. The first three inputs are the angular momentum quantum
 ///numbers, while the last three are the magnetic quantum numbers.
-pub fn wigner_3j(j1: u32, j2: u32, j3: u32, m1: i32, m2: i32, m3: i32) -> f64 {
+pub fn wigner_3j(j1: u32, j2: u32, j3: u32, m1: i32, m2: i32, m3: i32) -> Result<f64, String> {
+    match is_unphysical(j1, j2, j3, m1, m2, -m3) {
+        Some(e) => return Err(e),
+        None => (),
+    }
+
     let (j1, j2, j3, m1, m2, m3, mut sign) = reorder3j(j1, j2, j3, m1, m2, m3, 1.0);
 
     if (i64::from(j1) - i64::from(j2) - i64::from(m3)) % 2 != 0 {
         sign *= -1.0
     }
 
-    sign * clebsch_gordan(j1, j2, j3, m1, m2, -m3) / (2.0 * f64::from(j3) + 1.0).sqrt()
+    Ok(sign
+        * match clebsch_gordan(j1, j2, j3, m1, m2, -m3) {
+            Ok(x) => x,
+            Err(e) => return Err(e),
+        }
+        / (2.0 * f64::from(j3) + 1.0).sqrt())
 }
 
 ///Reorder j1/m1, j2/m2, j3/m3 such that j1 >= j2 >= j3 and m1 >= 0 or m1 == 0 && m2 >= 0
@@ -111,8 +121,7 @@ pub fn wigner_9j(
 
     println!("Passed triad checks");
 
-    let prefactor = phase(j13 + j23 - j33) * nabla(j21, j11, j31)
-        / nabla(j21, j22, j23)
+    let prefactor = phase(j13 + j23 - j33) * nabla(j21, j11, j31) / nabla(j21, j22, j23)
         * nabla(j12, j22, j32)
         / nabla(j12, j11, j13)
         * nabla(j33, j31, j32)
@@ -168,16 +177,20 @@ pub fn racah_w(j1: u32, j2: u32, j: u32, j3: u32, j12: u32, j23: u32) -> f64 {
 
 ///Returns the Gaunt coefficient for the input angular momenta.
 ///The Gaunt coefficient is defined as the integral over three spherical harmonics.
-pub fn gaunt(l1: u32, l2: u32, l3: u32, m1: i32, m2: i32, m3: i32) -> f64 {
-    f64::sqrt(
+pub fn gaunt(l1: u32, l2: u32, l3: u32, m1: i32, m2: i32, m3: i32) -> Result<f64, String> {
+    match is_unphysical(l1, l2, l3, m1, m2, -m3) {
+        Some(e) => return Err(e),
+        None => (),
+    }
+
+    Ok(f64::sqrt(
         (2.0 * (l1 as f64) + 1.0) * (2.0 * (l2 as f64) + 1.0) * (2.0 * (l3 as f64) + 1.0)
             / (4.0 * PI),
-    ) * wigner_3j(l1, l2, l3, 0, 0, 0)
-        * wigner_3j(l1, l2, l3, m1, m2, m3)
+    ) * wigner_3j(l1, l2, l3, 0, 0, 0).unwrap()//Have already checked for unphysicality.
+        * wigner_3j(l1, l2, l3, m1, m2, m3).unwrap())
 }
 
 fn delta(a: u32, b: u32, c: u32) -> f64 {
-    println!("{}, {}, {}", a, b, c);
     (factorial((a + c - b).into()) * factorial((a + b - c).into())
         / factorial((a + c + b + 1).into())
         * factorial((c + b - a).into()))
@@ -211,7 +224,7 @@ pub fn wigner_small_d(j: i32, mp: i32, m: i32, beta: f64) -> Result<f64, String>
                 * factorial(s.try_into().unwrap())
                 * factorial((mp - m + s).try_into().unwrap())
                 * factorial((j - mp - s).try_into().unwrap()))
-            * phase((mp - m + s).abs() as u32);//(-1)^x = (-1)^(-x) if x is real, and a positive i32 always fits in a u32.
+            * phase((mp - m + s).abs() as u32); //(-1)^x = (-1)^(-x) if x is real, and a positive i32 always fits in a u32.
     }
     Ok(sum * prefactor)
 }
@@ -239,7 +252,7 @@ pub fn wigner_d(
 ///the given integer inputs. Returns 0.0 if the arguments are invalid.
 ///The first three inputs are the angular momentum quantum numbers,
 ///while the last three are the magnetic quantum numbers.
-pub fn clebsch_gordan(j1: u32, j2: u32, j3: u32, m1: i32, m2: i32, m3: i32) -> f64 {
+pub fn clebsch_gordan(j1: u32, j2: u32, j3: u32, m1: i32, m2: i32, m3: i32) -> Result<f64, String> {
     //Normal Fortran rules: variables beginning with
     //i,j,...,n are i32 and everything else is f32
     //Original Fortran code says: IMPLICIT REAL*8(A-H,O-Z)
@@ -247,20 +260,13 @@ pub fn clebsch_gordan(j1: u32, j2: u32, j3: u32, m1: i32, m2: i32, m3: i32) -> f
     //This code is simply ported Fortran code,
     //as such it is not idiomatic rust.
 
-    if m3 != m1 + m2 {
-        return 0.0;
-    }
-
-    if j1 < (m1.abs() as u32) || j2 < (m2.abs() as u32) || j3 < (m3.abs() as u32) {
-        return 0.0;
-    }
-
-    if !is_triad(j1, j2, j3) {
-        return 0.0;
+    match is_unphysical(j1, j2, j3, m1, m2, m3) {
+        Some(e) => return Err(e),
+        None => (),
     }
 
     if m1.abs() + m2.abs() == 0 && (j1 + j2 + j3) % 2 == 1 {
-        return 0.0;
+        return Ok(0.0);
     }
 
     let ia1 = j3 + j2 - j1;
@@ -299,8 +305,7 @@ pub fn clebsch_gordan(j1: u32, j2: u32, j3: u32, m1: i32, m2: i32, m3: i32) -> f
         j1 + ni + 1 - (m3 as u32)
     } - j2; //j1 + ni + 1 - j2 - m3
             //Same here: all inputs to the factorials will be >= 0, so casting to u64 loses no sign information
-    let mut s1 = phase(ni + j_plus_m(j2, m2)) * factorial(ip1 as u64)
-        / factorial(ir2 as u64)
+    let mut s1 = phase(ni + j_plus_m(j2, m2)) * factorial(ip1 as u64) / factorial(ir2 as u64)
         * factorial((ip2 - 1) as u64)
         / (factorial(ni as u64) * factorial(ir3 as u64) * factorial((ir4 - 1) as u64));
 
@@ -324,9 +329,9 @@ pub fn clebsch_gordan(j1: u32, j2: u32, j3: u32, m1: i32, m2: i32, m3: i32) -> f
     let res = cc * s1;
     if res.abs() < 1e-14 {
         //guard against floating point errors making a zero result non-zero
-        0.0
+        Ok(0.0)
     } else {
-        res
+        Ok(res)
     }
 }
 
@@ -335,9 +340,10 @@ fn is_triad(j1: u32, j2: u32, j3: u32) -> bool {
     j3 >= abs_diff(j1, j2) && j3 <= j1 + j2
 }
 
-///Returns the result of adding an angular momentum to its projection. Panics if j < |m|.
+///Returns the result of adding an angular momentum to its projection.
+///Assumes that |m| <= j.
 fn j_plus_m(j: u32, m: i32) -> u32 {
-    assert!(j >= (m.abs() as u32));
+    debug_assert!(m.abs() as u32 <= j);
     if m >= 0 {
         j + (m as u32)
     } else {
@@ -382,5 +388,18 @@ fn phase(x: u32) -> f64 {
         1.0
     } else {
         -1.0
+    }
+}
+
+///Returns whether the given quantum numbers represent something unphysical in a CG-coeff or 3j symbol.
+fn is_unphysical(j1: u32, j2: u32, j3: u32, m1: i32, m2: i32, m3: i32) -> Option<String> {
+    if (m1.abs() as u32) > j1 && (m2.abs() as u32) > j2 && (m3.abs() as u32) > j3 {
+        Some("|m| is larger than its corresponding j".to_owned())
+    } else if !is_triad(j1, j2, j3) {
+        Some("j1, j2, and j3 does not fulfill the triangle condition".to_owned())
+    } else if m1 + m2 != m3 {
+        Some("m1 + m2 do not equal m3".to_owned())
+    } else {
+        None
     }
 }

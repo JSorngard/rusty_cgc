@@ -92,13 +92,13 @@ pub fn wigner_6j(j1: u32, j2: u32, j3: u32, j4: u32, j5: u32, j6: u32) -> f64 {
 
 pub fn wigner_9j(
     j11: u32,
-    j12: u32,
-    j13: u32,
     j21: u32,
-    j22: u32,
-    j23: u32,
     j31: u32,
+    j12: u32,
+    j22: u32,
     j32: u32,
+    j13: u32,
+    j23: u32,
     j33: u32,
 ) -> f64 {
     println!("In function");
@@ -125,13 +125,14 @@ pub fn wigner_9j(
     for x in 0..=*[2 * j33, j22 + j23 - j21, j13 + j23 - j33]
         .iter()
         .min()
-        .unwrap()//array is never empty
+        .unwrap()
+    //array is never empty
     {
         println!("x = {}", x);
         for y in 0..=j31 + j33 - j32 {
             println!(" y = {}", y);
-            for z in
-                i64::max((j11 as i64) - (j12 as i64) - (j13 as i64), 0) as u32..=(j11 + j13 - j12)
+            for z in u32::try_from((i64::from(j11) - i64::from(j12) - i64::from(j13)).max(0))
+                .unwrap()..=(j11 + j13 - j12)
             {
                 println!("  z = {}", z);
                 if j12 + j33 + x + z < j11 + j23 {

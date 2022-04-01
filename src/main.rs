@@ -212,6 +212,10 @@ mod tests {
             -4.0 / 315.0 * f64::sqrt(2.0 / 35.0)
         );
         assert_relative_eq!(wigner_9j(1, 1, 2, 1, 1, 1, 2, 1, 1).unwrap(), -1.0 / 45.0);
+        assert_relative_eq!(
+            wigner_9j(1, 2, 3, 1, 2, 3, 2, 4, 6).unwrap(),
+            (1.0 / 21.0) * f64::sqrt(0.2)
+        );
         //These tests fail. Do not use 9j function for "large" values of j.
         // assert_relative_eq!(
         //     wigner_9j(10, 11, 12, 11, 12, 13, 12, 13, 14).unwrap(),

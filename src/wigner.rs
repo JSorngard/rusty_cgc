@@ -125,7 +125,7 @@ pub fn wigner_9j(
     for x in 0..=*[2 * j33, j22 + j23 - j21, j13 + j23 - j33]
         .iter()
         .min()
-        .unwrap()
+        .unwrap()//array is never empty
     {
         println!("x = {}", x);
         for y in 0..=j31 + j33 - j32 {

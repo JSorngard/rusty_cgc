@@ -5,10 +5,8 @@ use std::f64::consts::PI;
 ///if the arguments are invalid. The first three inputs are the angular momentum quantum
 ///numbers, while the last three are the magnetic quantum numbers.
 pub fn wigner_3j(j1: u32, j2: u32, j3: u32, m1: i32, m2: i32, m3: i32) -> Result<f64, String> {
-    match is_unphysical(j1, j2, j3, m1, m2, -m3) {
-        Some(e) => return Err(e),
-        None => (),
-    }
+    
+    if let Some(e) = is_unphysical(j1, j2, j3, m1, m2, -m3) { return Err(e) };
 
     let (j1, j2, j3, m1, m2, m3, mut sign) = reorder3j(j1, j2, j3, m1, m2, m3, 1.0);
 
@@ -40,17 +38,17 @@ fn reorder3j(
     //If we assume that this phase factor is -1, we are only wrong if j1+j2+j3 is even,
     //which we correct for at the end.
     if j1 < j2 {
-        return reorder3j(j2, j1, j3, m2, m1, m3, -sign);
+        reorder3j(j2, j1, j3, m2, m1, m3, -sign)
     } else if j2 < j3 {
-        return reorder3j(j1, j3, j2, m1, m3, m2, -sign);
+        reorder3j(j1, j3, j2, m1, m3, m2, -sign)
     } else if m1 < 0 || (m1 == 0 && m2 < 0) {
-        return reorder3j(j1, j2, j3, -m1, -m2, -m3, -sign);
+        reorder3j(j1, j2, j3, -m1, -m2, -m3, -sign)
     } else {
         //Sign doesn't matter if total J = j1 + j2 + j3 is even
         if (j1 + j2 + j3) % 2 == 0 {
             sign = 1.0;
         }
-        return (j1, j2, j3, m1, m2, m3, sign);
+        (j1, j2, j3, m1, m2, m3, sign)
     }
 }
 
@@ -91,63 +89,63 @@ pub fn wigner_6j(j1: u32, j2: u32, j3: u32, j4: u32, j5: u32, j6: u32) -> Result
 }
 
 pub fn wigner_9j(
-    j11: u32,
-    j21: u32,
-    j31: u32,
-    j12: u32,
-    j22: u32,
-    j32: u32,
-    j13: u32,
-    j23: u32,
-    j33: u32,
+    j1: u32,
+    j2: u32,
+    j3: u32,
+    j4: u32,
+    j5: u32,
+    j6: u32,
+    j7: u32,
+    j8: u32,
+    j9: u32,
 ) -> Result<f64, String> {
     //Check that all rows are triads
-    if !is_triad(j11, j21, j31) || !is_triad(j12, j22, j32) || !is_triad(j13, j23, j33) {
+    if !is_triad(j1, j2, j3) || !is_triad(j4, j5, j6) || !is_triad(j7, j8, j9) {
         return Err("A row does not fulfill the triangle conditions".to_owned());
     }
 
     //Check that all columns are triads
-    if !is_triad(j11, j12, j13) || !is_triad(j21, j22, j23) || !is_triad(j31, j32, j33) {
+    if !is_triad(j1, j4, j7) || !is_triad(j2, j5, j8) || !is_triad(j3, j6, j9) {
         return Err("A column does not fulfill the triangle conditions".to_owned());
     }
 
-    let prefactor = phase(j13 + j23 - j33) * nabla(j21, j11, j31) / nabla(j21, j22, j23)
-        * nabla(j12, j22, j32)
-        / nabla(j12, j11, j13)
-        * nabla(j33, j31, j32)
-        / nabla(j33, j13, j23);
+    let prefactor = phase(j7 + j8 - j9) * nabla(j2, j1, j3) / nabla(j2, j5, j8)
+        * nabla(j4, j5, j6)
+        / nabla(j4, j1, j7)
+        * nabla(j9, j3, j6)
+        / nabla(j9, j7, j8);
 
     let mut sum: f64 = 0.0;
-    for x in 0..=(j22 + j23 - j21).min(j13 + j23 - j33) {
-        for y in 0..=(j31 + j33 - j32).min(j12 + j22 - j32) {
-            for z in 0..=(j11 + j13 - j12).min(j11 + j21 - j31) {
-                if j12 + j33 + x + z < j11 + j23
-                    || j21 + j32 + x + z < j12 + j23
-                    || j11 + j21 + j33 < j32 + y + z
+    for x in 0..=(j5 + j8 - j2).min(j7 + j8 - j9) {
+        for y in 0..=(j3 + j9 - j6).min(j4 + j5 - j6) {
+            for z in 0..=(j1 + j7 - j4).min(j1 + j2 - j3) {
+                if j4 + j9 + x + z < j1 + j8
+                    || j2 + j6 + x + z < j4 + j8
+                    || j1 + j2 + j9 < j6 + y + z
                 {
                     continue;
                 }
-                sum += phase(x + y + z) * factorial((2 * j23 - x).into())
+                sum += phase(x + y + z) * factorial((2 * j8 - x).into())
                     / factorial(x.into())
-                    / factorial((j22 + j23 - x - j21).into())
-                    * factorial((j21 + j22 + x - j23).into())
-                    / factorial((j13 + j23 - j33 - x).into())
-                    / factorial((j21 + j32 + x + y - j23 - j12).into())//fails with overflow for some inputs
-                    * factorial((j13 + j33 + x - j23).into())
-                    / factorial((j12 + j33 + x + z - j11 - j23).into())
+                    / factorial((j5 + j8 - x - j2).into())
+                    * factorial((j2 + j5 + x - j8).into())
+                    / factorial((j7 + j8 - j9 - x).into())
+                    / factorial((j2 + j6 + x + y - j8 - j4).into())//fails with overflow for some inputs
+                    * factorial((j7 + j9 + x - j8).into())
+                    / factorial((j4 + j9 + x + z - j1 - j8).into())
                     / factorial(y.into())
-                    * factorial((j22 + j32 + y - j12).into())
-                    / factorial((j12 + j22 - j32 - y).into())
-                    * factorial((j31 + j32 + y - j33).into())
-                    / factorial((j31 + j33 - y - j32).into())
-                    / factorial((2 * j32 + 1 + y).into())
-                    * factorial((j11 + j21 + j33 - y - z - j32).into())
+                    * factorial((j5 + j6 + y - j4).into())
+                    / factorial((j4 + j5 - j6 - y).into())
+                    * factorial((j3 + j6 + y - j9).into())
+                    / factorial((j3 + j9 - y - j6).into())
+                    / factorial((2 * j6 + 1 + y).into())
+                    * factorial((j1 + j2 + j9 - y - z - j6).into())
                     / factorial(z.into())
-                    / factorial((j11 + j21 - j31 - z).into())
-                    * factorial((2 * j11 - z).into())
-                    / factorial((j11 + j13 - z - j12).into())
-                    * factorial((j12 + j13 + z - j11).into())
-                    / factorial((j11 + j21 + j31 + 1 - z).into());
+                    / factorial((j1 + j2 - j3 - z).into())
+                    * factorial((2 * j1 - z).into())
+                    / factorial((j1 + j7 - z - j4).into())
+                    * factorial((j4 + j7 + z - j1).into())
+                    / factorial((j1 + j2 + j3 + 1 - z).into());
             }
         }
     }
@@ -166,10 +164,8 @@ pub fn racah_w(j1: u32, j2: u32, j: u32, j3: u32, j12: u32, j23: u32) -> Result<
 ///Returns the Gaunt coefficient for the input angular momenta.
 ///The Gaunt coefficient is defined as the integral over three spherical harmonics.
 pub fn gaunt(l1: u32, l2: u32, l3: u32, m1: i32, m2: i32, m3: i32) -> Result<f64, String> {
-    match is_unphysical(l1, l2, l3, m1, m2, -m3) {
-        Some(e) => return Err(e),
-        None => (),
-    }
+    
+    if let Some(e) = is_unphysical(l1, l2, l3, m1, m2, -m3) { return Err(e) };
 
     Ok(f64::sqrt(
         (2.0 * (l1 as f64) + 1.0) * (2.0 * (l2 as f64) + 1.0) * (2.0 * (l3 as f64) + 1.0)
@@ -249,10 +245,7 @@ pub fn clebsch_gordan(j1: u32, j2: u32, j3: u32, m1: i32, m2: i32, m3: i32) -> R
     //This code is simply ported Fortran code,
     //as such it is not completely idiomatic rust.
 
-    match is_unphysical(j1, j2, j3, m1, m2, m3) {
-        Some(e) => return Err(e),
-        None => (),
-    }
+    if let Some(e) = is_unphysical(j1, j2, j3, m1, m2, m3) { return Err(e) };
 
     if m1.abs() + m2.abs() == 0 && (j1 + j2 + j3) % 2 == 1 {
         return Ok(0.0);

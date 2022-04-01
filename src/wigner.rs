@@ -169,7 +169,7 @@ pub fn gaunt(l1: u32, l2: u32, l3: u32, m1: i32, m2: i32, m3: i32) -> Result<f64
     };
 
     Ok(f64::sqrt(
-        (2.0 * (l1 as f64) + 1.0) * (2.0 * (l2 as f64) + 1.0) * (2.0 * (l3 as f64) + 1.0)
+        (2.0 * f64::from(l1) + 1.0) * (2.0 * f64::from(l2) + 1.0) * (2.0 * f64::from(l3) + 1.0)
             / (4.0 * PI),
     ) * wigner_3j(l1, l2, l3, 0, 0, 0).unwrap()//Have already checked for unphysicality.
         * wigner_3j(l1, l2, l3, m1, m2, m3).unwrap())

@@ -202,9 +202,9 @@ fn nabla(a: u32, b: u32, c: u32) -> f64 {
 }
 
 ///Returns the value of the small Wigner d-matrix in the z-y-z convention.
-///If the input is not valid it returns an error instead.
 pub fn wigner_small_d(j: u32, mp: i32, m: i32, beta: f64) -> Result<f64, String> {
-    if mp.abs() as u32 > j || m.abs() as u32 > j {
+    //abs(i32) always fits in a u32.
+    if u32::try_from(mp.abs()).unwrap() > j || u32::try_from(m.abs()).unwrap() > j {
         return Err("m-values can not be larger than j".to_owned());
     }
 
@@ -228,7 +228,6 @@ pub fn wigner_small_d(j: u32, mp: i32, m: i32, beta: f64) -> Result<f64, String>
 }
 
 ///Returns the value of the Wigner D-matrix in the z-y-z convention.
-///If the input is not valid it returns an error instead.
 pub fn wigner_d(
     j: u32,
     mp: i32,
@@ -251,12 +250,8 @@ pub fn wigner_d(
 ///The first three inputs are the angular momentum quantum numbers,
 ///while the last three are the magnetic quantum numbers.
 pub fn clebsch_gordan(j1: u32, j2: u32, j3: u32, m1: i32, m2: i32, m3: i32) -> Result<f64, String> {
-    //Normal Fortran rules: variables beginning with
-    //i,j,...,n are i32 and everything else is f32
-    //Original Fortran code says: IMPLICIT REAL*8(A-H,O-Z)
-    //=> all variables that begin with A-H or O-Z must be f64
     //This code is simply ported Fortran code,
-    //as such it is not idiomatic rust.
+    //as such it is not completely idiomatic rust.
 
     match is_unphysical(j1, j2, j3, m1, m2, m3) {
         Some(e) => return Err(e),
@@ -269,23 +264,23 @@ pub fn clebsch_gordan(j1: u32, j2: u32, j3: u32, m1: i32, m2: i32, m3: i32) -> R
 
     let ia1 = j3 + j2 - j1;
     let ia2 = j_plus_m(j3, m3);
-    let ia3: i64 = (j2 as i64) + (m3 as i64) - (j1 as i64);
+    let ia3: i64 = i64::from(j2) + i64::from(m3) - i64::from(j1);
 
-    let ni = if ia3 > 0 { ia3 as u32 } else { 0 };
+    let ni = if ia3 > 0 { u32::try_from(ia3).unwrap() } else { 0 };
     let nm = if ia2 <= ia1 { ia2 } else { ia1 };
 
     let cc = f64::sqrt(
         //All inputs to the factorials will be >= 0, so casting to u64 loses no sign information
-        f64::from(2 * j3 + 1) * factorial((j3 + j1 - j2) as u64)
-            / factorial((j1 + j2 + j3 + 1) as u64)
-            * factorial(ia1 as u64)
-            * factorial((j1 + j2 - j3) as u64)
-            / factorial(j_plus_m(j1, -m1) as u64)
-            / factorial(j_plus_m(j2, -m2) as u64)
-            * factorial(ia2 as u64)
-            / factorial(j_plus_m(j2, m2) as u64)
-            * factorial(j_plus_m(j3, -m3) as u64)
-            / factorial(j_plus_m(j1, m1) as u64),
+        f64::from(2 * j3 + 1) * factorial(u64::from(j3 + j1 - j2))
+            / factorial(u64::from(j1 + j2 + j3 + 1))
+            * factorial(u64::from(ia1))
+            * factorial(u64::from(j1 + j2 - j3))
+            / factorial(u64::from(j_plus_m(j1, -m1)))
+            / factorial(u64::from(j_plus_m(j2, -m2)))
+            * factorial(u64::from(ia2))
+            / factorial(u64::from(j_plus_m(j2, m2)))
+            * factorial(u64::from(j_plus_m(j3, -m3)))
+            / factorial(u64::from(j_plus_m(j1, m1))),
     );
 
     let mut ip1 = if m1 >= 0 {

@@ -1,8 +1,8 @@
 use num::complex::Complex;
 use std::f64::consts::PI;
 
-///Returns the value of the Wigner 3j symbol for the given integer inputs. Returns 0.0
-///if the arguments are invalid. The first three inputs are the angular momentum quantum
+///Returns the value of the Wigner 3j symbol for the given integer inputs.
+///The first three inputs are the angular momentum quantum
 ///numbers, while the last three are the magnetic quantum numbers.
 pub fn wigner_3j(j1: u32, j2: u32, j3: u32, m1: i32, m2: i32, m3: i32) -> Result<f64, String> {
     if let Some(e) = is_unphysical(j1, j2, j3, m1, m2, -m3) {
@@ -239,7 +239,7 @@ pub fn wigner_d(
 }
 
 ///Returns the value of the Clebsch-Gordan coefficient for
-///the given integer inputs. Returns 0.0 if the arguments are invalid.
+///the given integer inputs.
 ///The first three inputs are the angular momentum quantum numbers,
 ///while the last three are the magnetic quantum numbers.
 pub fn clebsch_gordan(j1: u32, j2: u32, j3: u32, m1: i32, m2: i32, m3: i32) -> Result<f64, String> {

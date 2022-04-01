@@ -391,7 +391,7 @@ fn is_unphysical(j1: u32, j2: u32, j3: u32, m1: i32, m2: i32, m3: i32) -> Option
     if (m1.abs() as u32) > j1 && (m2.abs() as u32) > j2 && (m3.abs() as u32) > j3 {
         Some("|m| is larger than its corresponding j".to_owned())
     } else if !is_triad(j1, j2, j3) {
-        Some("j1, j2, and j3 does not fulfill the triangle condition".to_owned())
+        Some("j1, j2, and j3 do not fulfill the triangle condition".to_owned())
     } else if m1 + m2 != m3 {
         Some("m1 + m2 do not equal m3".to_owned())
     } else {

@@ -350,10 +350,7 @@ fn j_plus_m(j: u32, m: i32) -> u32 {
 }
 
 ///Returns the absolute value of the difference of the unsigned integers x and y.
-fn abs_diff<U>(x: U, y: U) -> U
-where
-    U: num::Unsigned + PartialOrd + std::ops::Sub<Output = U>,
-{
+fn abs_diff(x: u32, y: u32) -> u32 {
     if x > y {
         x - y
     } else {

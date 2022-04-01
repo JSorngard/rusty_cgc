@@ -122,7 +122,11 @@ pub fn wigner_9j(
 
     println!("prefactor is {}", prefactor);
     let mut sum: f64 = 0.0;
-    for x in 0..=*[2*j33, j22 + j23 - j21, j13 + j23 - j33].iter().min().unwrap() {
+    for x in 0..=*[2 * j33, j22 + j23 - j21, j13 + j23 - j33]
+        .iter()
+        .min()
+        .unwrap()
+    {
         println!("x = {}", x);
         for y in 0..=j31 + j33 - j32 {
             println!(" y = {}", y);
@@ -303,8 +307,7 @@ pub fn clebsch_gordan(j1: u32, j2: u32, j3: u32, m1: i32, m2: i32, m3: i32) -> R
         j1 + ni + 1 - (m3 as u32)
     } - j2; //j1 + ni + 1 - j2 - m3
             //Same here: all inputs to the factorials will be >= 0, so casting to u64 loses no sign information
-    let mut s1 = phase(ni + j_plus_m(j2, m2)) * factorial(ip1.into())
-        / factorial(ir2.into())
+    let mut s1 = phase(ni + j_plus_m(j2, m2)) * factorial(ip1.into()) / factorial(ir2.into())
         * factorial((ip2 - 1).into())
         / (factorial(ni.into()) * factorial(ir3.into()) * factorial((ir4 - 1).into()));
 

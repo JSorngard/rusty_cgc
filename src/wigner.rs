@@ -326,7 +326,7 @@ pub fn clebsch_gordan(j1: u32, j2: u32, j3: u32, m1: i32, m2: i32, m3: i32) -> R
 
 ///Returns whether the given triplet of angular momenta form a triad.
 fn is_triad(j1: u32, j2: u32, j3: u32) -> bool {
-    j3 >= abs_diff(j1, j2) && j3 <= j1 + j2
+    j3 >= j1.abs_diff(j2) && j3 <= j1 + j2
 }
 
 ///Returns the result of adding an angular momentum to its projection.
@@ -337,15 +337,6 @@ fn j_plus_m(j: u32, m: i32) -> u32 {
         j + u32::try_from(m).unwrap()
     } else {
         j - u32::try_from(-m).unwrap()
-    }
-}
-
-///Returns the absolute value of the difference of the unsigned integers x and y.
-fn abs_diff(x: u32, y: u32) -> u32 {
-    if x > y {
-        x - y
-    } else {
-        y - x
     }
 }
 

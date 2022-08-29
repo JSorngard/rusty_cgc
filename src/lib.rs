@@ -31,6 +31,8 @@ use std::f64::consts::PI;
 /// assert_relative_eq!(wigner_3j(10, 10, 10, 8, 2, -10).unwrap(), 2.0*f64::sqrt(561.0/723695.0));
 /// # }
 /// ```
+/// For certain inputs this error can compound during computation.
+/// For all valid 3j symbols with j1 and j2 at most equal to 10, this error is at most 100 * f64::EPSILON.
 pub fn wigner_3j(j1: u32, j2: u32, j3: u32, m1: i32, m2: i32, m3: i32) -> Result<f64, String> {
     if let Some(e) = is_unphysical(j1, j2, j3, m1, m2, -m3) {
         return Err(e);

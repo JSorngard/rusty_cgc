@@ -12,9 +12,15 @@ use std::f64::consts::PI;
 /// The first three inputs are the angular momentum quantum
 /// numbers, while the last three are the magnetic quantum numbers.
 /// # Example
+/// Basic usage
 /// ```
-/// # use clebsch_gordan::wigner_3j;
-/// assert_eq!(wigner_3j(1,1,1,1,-1,0).unwrap(),1.0/f64::sqrt(6.0));
+/// # use rusty_cgc::wigner_3j;
+/// assert_eq!(wigner_3j(1, 1, 1, 1, -1, 0).unwrap(), 1.0/f64::sqrt(6.0));
+/// ```
+/// There can be floating point errors for larger inputs, so the following assertion will panic:
+/// ```should_panic
+/// # use rusty_cgc::wigner_3j;
+/// assert_eq!(wigner_3j(10, 10, 10, 8, 2, -10).unwrap(), 2.0*f64::sqrt(561.0/723695.0));
 /// ```
 pub fn wigner_3j(j1: u32, j2: u32, j3: u32, m1: i32, m2: i32, m3: i32) -> Result<f64, String> {
     if let Some(e) = is_unphysical(j1, j2, j3, m1, m2, -m3) {

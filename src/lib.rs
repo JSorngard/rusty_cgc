@@ -5,6 +5,8 @@ use wigner::{wigner_3j, wigner_6j, wigner_9j};
 #[cfg(test)]
 #[macro_use]
 extern crate approx;
+
+#[cfg(test)]
 mod truths;
 
 #[cfg(test)]

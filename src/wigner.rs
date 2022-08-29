@@ -156,11 +156,10 @@ pub fn wigner_9j(
 
 /// Returns the value of the Racah W coefficient.
 pub fn racah_w(j1: u32, j2: u32, j: u32, j3: u32, j12: u32, j23: u32) -> Result<f64, String> {
-    Ok(phase(j1 + j2 + j3 + j)
-        * match wigner_6j(j1, j2, j12, j3, j, j23) {
-            Ok(x) => x,
-            Err(e) => return Err(e),
-        })
+    Ok(match wigner_6j(j1, j2, j12, j3, j, j23) {
+        Ok(x) => phase(j1 + j2 + j3 + j) * x,
+        Err(e) => return Err(e),
+    })
 }
 
 /// Returns the Gaunt coefficient for the input angular momenta.

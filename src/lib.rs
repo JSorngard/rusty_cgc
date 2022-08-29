@@ -1,41 +1,6 @@
-#[allow(dead_code)]
-mod wigner;
+pub mod wigner;
 
 use wigner::{wigner_3j, wigner_6j, wigner_9j};
-
-fn main() {
-    const MAXJ: u32 = 10;
-    let start_time = std::time::Instant::now();
-    let mut acc: f64 = 0.0;
-    for j1 in 0..=MAXJ {
-        for j2 in 0..=MAXJ {
-            for j3 in ((j1 as i32) - (j2 as i32)).abs() as u32..=j1 + j2 {
-                for m1 in -(j1 as i32)..=j1 as i32 {
-                    for m2 in -(j2 as i32)..=j2 as i32 {
-                        if (m1 + m2).abs() as u32 > j3 {
-                            continue;
-                        }
-                        acc += wigner_3j(j1, j2, j3, m1, m2, -m1 - m2).unwrap();
-                    }
-                }
-            }
-        }
-    }
-    let elapsed = start_time.elapsed();
-    let num_symbols = u32::pow(MAXJ * (2 * MAXJ + 1), 3) as u32;
-    println!(
-        "Took {:.2?} to compute all {} 3j-symbols with j1 and j2 of at most {}. Their sum is {}",
-        elapsed, num_symbols, MAXJ, acc,
-    );
-    println!(
-        "This gives an average speed of {:.2?} per function call",
-        elapsed / num_symbols
-    );
-
-    println!("{}", wigner_6j(1, 2, 3, 4, 5, 6).unwrap());
-    println!("{}", wigner_9j(2, 4, 6, 4, 6, 8, 6, 8, 10).unwrap());
-    println!("{}", wigner_9j(1, 2, 3, 1, 2, 3, 2, 4, 6).unwrap());
-}
 
 #[cfg(test)]
 #[macro_use]

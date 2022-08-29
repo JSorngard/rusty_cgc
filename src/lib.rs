@@ -199,11 +199,16 @@ pub fn gaunt(l1: u32, l2: u32, l3: u32, m1: i32, m2: i32, m3: i32) -> Result<f64
         return Err(e);
     };
 
-    Ok((
-        (2.0 * f64::from(l1) + 1.0) * (2.0 * f64::from(l2) + 1.0) * (2.0 * f64::from(l3) + 1.0)
-            / (4.0 * PI)
-    ).sqrt() * wigner_3j(l1, l2, l3, 0, 0, 0).unwrap()//Have already checked for unphysicality.
-        * wigner_3j(l1, l2, l3, m1, m2, m3).unwrap())
+    let w1 = wigner_3j(l1, l2, l3, 0, 0, 0)?;
+    let w2 = wigner_3j(l1, l2, l3, m1, m2, m3)?;
+
+    Ok(
+        ((2.0 * f64::from(l1) + 1.0) * (2.0 * f64::from(l2) + 1.0) * (2.0 * f64::from(l3) + 1.0)
+            / (4.0 * PI))
+            .sqrt()
+            * w1
+            * w2,
+    )
 }
 
 /// Returns the value of the triangle coefficient \Delta(abc) used in the computation of 6j and 9j symbols.

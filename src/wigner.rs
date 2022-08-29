@@ -76,7 +76,7 @@ pub fn wigner_6j(j1: u32, j2: u32, j3: u32, j4: u32, j5: u32, j6: u32) -> Result
         / factorial((j4 + j5 - j3).into())
         * phase(j4 + j6 + j1 + j3);
     let mut sum: f64 = 0.0;
-    for z in 0..=u32::min(u32::min(2 * j4, j4 + j6 - j2), j4 + j3 - j5) {
+    for z in 0..=(2 * j4).min(j4 + j6 - j2).min(j4 + j3 - j5) {
         sum += factorial((2 * j4 - z).into())
             * factorial((j4 + j6 + j3 - z - j1).into())
             * factorial((j4 + j6 + j1 + j3 + 1 - z).into())
@@ -90,7 +90,7 @@ pub fn wigner_6j(j1: u32, j2: u32, j3: u32, j4: u32, j5: u32, j6: u32) -> Result
     Ok(sum * fac)
 }
 
-/This function fails for some inputs, and I have not figured out why yet
+/// This function fails for some inputs, and I have not figured out why yet
 pub fn wigner_9j(
     j1: u32,
     j2: u32,

@@ -1,9 +1,9 @@
 use num::complex::Complex;
 use std::f64::consts::PI;
 
-///Returns the value of the Wigner 3j symbol for the given integer inputs.
-///The first three inputs are the angular momentum quantum
-///numbers, while the last three are the magnetic quantum numbers.
+/// Returns the value of the Wigner 3j symbol for the given integer inputs.
+/// The first three inputs are the angular momentum quantum
+/// numbers, while the last three are the magnetic quantum numbers.
 pub fn wigner_3j(j1: u32, j2: u32, j3: u32, m1: i32, m2: i32, m3: i32) -> Result<f64, String> {
     if let Some(e) = is_unphysical(j1, j2, j3, m1, m2, -m3) {
         return Err(e);
@@ -23,7 +23,7 @@ pub fn wigner_3j(j1: u32, j2: u32, j3: u32, m1: i32, m2: i32, m3: i32) -> Result
         / (2.0 * f64::from(j3) + 1.0).sqrt())
 }
 
-///Reorder j1/m1, j2/m2, j3/m3 such that j1 >= j2 >= j3 and m1 >= 0 or m1 == 0 && m2 >= 0
+/// Reorder j1/m1, j2/m2, j3/m3 such that j1 >= j2 >= j3 and m1 >= 0 or m1 == 0 && m2 >= 0
 fn reorder3j(
     j1: u32,
     j2: u32,
@@ -53,6 +53,7 @@ fn reorder3j(
     }
 }
 
+/// Returns the value of the Wigner 6j-symbol.
 pub fn wigner_6j(j1: u32, j2: u32, j3: u32, j4: u32, j5: u32, j6: u32) -> Result<f64, String> {
     if !is_triad(j1, j2, j3)
         || !is_triad(j1, j5, j6)
@@ -89,70 +90,71 @@ pub fn wigner_6j(j1: u32, j2: u32, j3: u32, j4: u32, j5: u32, j6: u32) -> Result
     Ok(sum * fac)
 }
 
-pub fn wigner_9j(
-    j1: u32,
-    j2: u32,
-    j3: u32,
-    j4: u32,
-    j5: u32,
-    j6: u32,
-    j7: u32,
-    j8: u32,
-    j9: u32,
-) -> Result<f64, String> {
-    //Check that all rows are triads
-    if !is_triad(j1, j2, j3) || !is_triad(j4, j5, j6) || !is_triad(j7, j8, j9) {
-        return Err("A row does not fulfill the triangle conditions".to_owned());
-    }
+///This function fails for some inputs, and I have not figured out why yet
+// pub fn wigner_9j(
+//     j1: u32,
+//     j2: u32,
+//     j3: u32,
+//     j4: u32,
+//     j5: u32,
+//     j6: u32,
+//     j7: u32,
+//     j8: u32,
+//     j9: u32,
+// ) -> Result<f64, String> {
+//     //Check that all rows are triads
+//     if !is_triad(j1, j2, j3) || !is_triad(j4, j5, j6) || !is_triad(j7, j8, j9) {
+//         return Err("A row does not fulfill the triangle conditions".to_owned());
+//     }
 
-    //Check that all columns are triads
-    if !is_triad(j1, j4, j7) || !is_triad(j2, j5, j8) || !is_triad(j3, j6, j9) {
-        return Err("A column does not fulfill the triangle conditions".to_owned());
-    }
+//     //Check that all columns are triads
+//     if !is_triad(j1, j4, j7) || !is_triad(j2, j5, j8) || !is_triad(j3, j6, j9) {
+//         return Err("A column does not fulfill the triangle conditions".to_owned());
+//     }
 
-    let prefactor = phase(j7 + j8 - j9) * nabla(j2, j1, j3) / nabla(j2, j5, j8) * nabla(j4, j5, j6)
-        / nabla(j4, j1, j7)
-        * nabla(j9, j3, j6)
-        / nabla(j9, j7, j8);
+//     let prefactor = phase(j7 + j8 - j9) * nabla(j2, j1, j3) / nabla(j2, j5, j8) * nabla(j4, j5, j6)
+//         / nabla(j4, j1, j7)
+//         * nabla(j9, j3, j6)
+//         / nabla(j9, j7, j8);
 
-    let mut sum: f64 = 0.0;
-    for x in 0..=(j5 + j8 - j2).min(j7 + j8 - j9) {
-        for y in 0..=(j3 + j9 - j6).min(j4 + j5 - j6) {
-            for z in 0..=(j1 + j7 - j4).min(j1 + j2 - j3) {
-                if j4 + j9 + x + z < j1 + j8
-                    || j2 + j6 + x + z < j4 + j8
-                    || j1 + j2 + j9 < j6 + y + z
-                {
-                    continue;
-                }
-                sum += phase(x + y + z) * factorial((2 * j8 - x).into())
-                    / factorial(x.into())
-                    / factorial((j5 + j8 - x - j2).into())
-                    * factorial((j2 + j5 + x - j8).into())
-                    / factorial((j7 + j8 - j9 - x).into())
-                    / factorial((j2 + j6 + x + y - j8 - j4).into())//fails with overflow for some inputs
-                    * factorial((j7 + j9 + x - j8).into())
-                    / factorial((j4 + j9 + x + z - j1 - j8).into())
-                    / factorial(y.into())
-                    * factorial((j5 + j6 + y - j4).into())
-                    / factorial((j4 + j5 - j6 - y).into())
-                    * factorial((j3 + j6 + y - j9).into())
-                    / factorial((j3 + j9 - y - j6).into())
-                    / factorial((2 * j6 + 1 + y).into())
-                    * factorial((j1 + j2 + j9 - y - z - j6).into())
-                    / factorial(z.into())
-                    / factorial((j1 + j2 - j3 - z).into())
-                    * factorial((2 * j1 - z).into())
-                    / factorial((j1 + j7 - z - j4).into())
-                    * factorial((j4 + j7 + z - j1).into())
-                    / factorial((j1 + j2 + j3 + 1 - z).into());
-            }
-        }
-    }
-    Ok(prefactor * sum)
-}
+//     let mut sum: f64 = 0.0;
+//     for x in 0..=(j5 + j8 - j2).min(j7 + j8 - j9) {
+//         for y in 0..=(j3 + j9 - j6).min(j4 + j5 - j6) {
+//             for z in 0..=(j1 + j7 - j4).min(j1 + j2 - j3) {
+//                 if j4 + j9 + x + z < j1 + j8
+//                     || j2 + j6 + x + z < j4 + j8
+//                     || j1 + j2 + j9 < j6 + y + z
+//                 {
+//                     continue;
+//                 }
+//                 sum += phase(x + y + z) * factorial((2 * j8 - x).into())
+//                     / factorial(x.into())
+//                     / factorial((j5 + j8 - x - j2).into())
+//                     * factorial((j2 + j5 + x - j8).into())
+//                     / factorial((j7 + j8 - j9 - x).into())
+//                     / factorial((j2 + j6 + x + y - j8 - j4).into())//fails with overflow for some inputs
+//                     * factorial((j7 + j9 + x - j8).into())
+//                     / factorial((j4 + j9 + x + z - j1 - j8).into())
+//                     / factorial(y.into())
+//                     * factorial((j5 + j6 + y - j4).into())
+//                     / factorial((j4 + j5 - j6 - y).into())
+//                     * factorial((j3 + j6 + y - j9).into())
+//                     / factorial((j3 + j9 - y - j6).into())
+//                     / factorial((2 * j6 + 1 + y).into())
+//                     * factorial((j1 + j2 + j9 - y - z - j6).into())
+//                     / factorial(z.into())
+//                     / factorial((j1 + j2 - j3 - z).into())
+//                     * factorial((2 * j1 - z).into())
+//                     / factorial((j1 + j7 - z - j4).into())
+//                     * factorial((j4 + j7 + z - j1).into())
+//                     / factorial((j1 + j2 + j3 + 1 - z).into());
+//             }
+//         }
+//     }
+//     Ok(prefactor * sum)
+// }
 
-///Returns the value of the Racah W coefficient.
+/// Returns the value of the Racah W coefficient.
 pub fn racah_w(j1: u32, j2: u32, j: u32, j3: u32, j12: u32, j23: u32) -> Result<f64, String> {
     Ok(phase(j1 + j2 + j3 + j)
         * match wigner_6j(j1, j2, j12, j3, j, j23) {
@@ -161,8 +163,8 @@ pub fn racah_w(j1: u32, j2: u32, j: u32, j3: u32, j12: u32, j23: u32) -> Result<
         })
 }
 
-///Returns the Gaunt coefficient for the input angular momenta.
-///The Gaunt coefficient is defined as the integral over three spherical harmonics.
+/// Returns the Gaunt coefficient for the input angular momenta.
+/// The Gaunt coefficient is defined as the integral over three spherical harmonics.
 pub fn gaunt(l1: u32, l2: u32, l3: u32, m1: i32, m2: i32, m3: i32) -> Result<f64, String> {
     if let Some(e) = is_unphysical(l1, l2, l3, m1, m2, -m3) {
         return Err(e);
@@ -175,8 +177,8 @@ pub fn gaunt(l1: u32, l2: u32, l3: u32, m1: i32, m2: i32, m3: i32) -> Result<f64
         * wigner_3j(l1, l2, l3, m1, m2, m3).unwrap())
 }
 
-///Returns the value of the triangle coefficient \Delta(abc) used in the computation of 6j and 9j symbols.
-///The inputs are debug_asserted to be triangular.
+/// Returns the value of the triangle coefficient \Delta(abc) used in the computation of 6j and 9j symbols.
+/// The inputs are debug_asserted to be triangular.
 fn delta(a: u32, b: u32, c: u32) -> f64 {
     debug_assert!(a + c >= b && a + b >= c && b + c >= a);
     (factorial((a + c - b).into()) * factorial((a + b - c).into())
@@ -185,8 +187,8 @@ fn delta(a: u32, b: u32, c: u32) -> f64 {
     .sqrt()
 }
 
-///Returns the value of the \nabla(abc) triangle coefficient used in the computation of 9j symbols.
-///The inputs are debug_asserted to be triangular.
+/// Returns the value of the \nabla(abc) triangle coefficient used in the computation of 9j symbols.
+/// The inputs are debug_asserted to be triangular.
 fn nabla(a: u32, b: u32, c: u32) -> f64 {
     debug_assert!(a + c >= b && a + b >= c && b + c >= a);
     (factorial((a + c - b).into()) * factorial((a + b - c).into()) / factorial((b + c - a).into())
@@ -194,7 +196,7 @@ fn nabla(a: u32, b: u32, c: u32) -> f64 {
     .sqrt()
 }
 
-///Returns the value of the small Wigner d-matrix in the z-y-z convention.
+/// Returns the value of the small Wigner d-matrix in the z-y-z convention.
 pub fn wigner_small_d(j: u32, mp: i32, m: i32, beta: f64) -> Result<f64, String> {
     //abs(i32) always fits in a u32.
     if u32::try_from(mp.abs()).unwrap() > j || u32::try_from(m.abs()).unwrap() > j {
@@ -220,7 +222,7 @@ pub fn wigner_small_d(j: u32, mp: i32, m: i32, beta: f64) -> Result<f64, String>
     Ok(sum * prefactor)
 }
 
-///Returns the value of the Wigner D-matrix in the z-y-z convention.
+/// Returns the value of the Wigner D-matrix in the z-y-z convention.
 pub fn wigner_d(
     j: u32,
     mp: i32,
@@ -238,10 +240,10 @@ pub fn wigner_d(
         * (-1.0 * Complex::<f64>::i() * (m as f64) * gamma).exp())
 }
 
-///Returns the value of the Clebsch-Gordan coefficient for
-///the given integer inputs.
-///The first three inputs are the angular momentum quantum numbers,
-///while the last three are the magnetic quantum numbers.
+/// Returns the value of the Clebsch-Gordan coefficient for
+/// the given integer inputs.
+/// The first three inputs are the angular momentum quantum numbers,
+/// while the last three are the magnetic quantum numbers.
 pub fn clebsch_gordan(j1: u32, j2: u32, j3: u32, m1: i32, m2: i32, m3: i32) -> Result<f64, String> {
     //This code is simply ported Fortran code,
     //as such it is not completely idiomatic rust.
@@ -324,13 +326,13 @@ pub fn clebsch_gordan(j1: u32, j2: u32, j3: u32, m1: i32, m2: i32, m3: i32) -> R
     }
 }
 
-///Returns whether the given triplet of angular momenta form a triad.
+/// Returns whether the given triplet of angular momenta form a triad.
 fn is_triad(j1: u32, j2: u32, j3: u32) -> bool {
     j3 >= j1.abs_diff(j2) && j3 <= j1 + j2
 }
 
-///Returns the result of adding an angular momentum to its projection.
-///Debug_asserts that |m| <= j.
+/// Returns the result of adding an angular momentum to its projection.
+/// Debug_asserts that |m| <= j.
 fn j_plus_m(j: u32, m: i32) -> u32 {
     debug_assert!(u32::try_from(m.abs()).unwrap() <= j);
     if m >= 0 {

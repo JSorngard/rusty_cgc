@@ -93,7 +93,7 @@ pub fn wigner_6j(j1: u32, j2: u32, j3: u32, j4: u32, j5: u32, j6: u32) -> Result
     }
 
     //The arguments to the factorials should always be positive
-    let fac = delta(j2, j4, j6) * delta(j2, j1, j3) / factorial((j2 + j4 - j6).into())
+    let fac: f64 = delta(j2, j4, j6) * delta(j2, j1, j3) / factorial((j2 + j4 - j6).into())
         * delta(j6, j5, j1)
         / factorial((j6 + j1 - j5).into())
         * factorial((j2 + j4 + j6 + 1).into())
@@ -104,18 +104,19 @@ pub fn wigner_6j(j1: u32, j2: u32, j3: u32, j4: u32, j5: u32, j6: u32) -> Result
         / factorial((j1 + j3 - j2).into())
         / factorial((j4 + j5 - j3).into())
         * phase(j4 + j6 + j1 + j3);
-    let mut sum: f64 = 0.0;
-    for z in 0..=(2 * j4).min(j4 + j6 - j2).min(j4 + j3 - j5) {
-        sum += factorial((2 * j4 - z).into())
-            * factorial((j4 + j6 + j3 - z - j1).into())
-            * factorial((j4 + j6 + j1 + j3 + 1 - z).into())
-            / factorial(z.into())
-            / factorial((j4 + j6 - z - j2).into())
-            / factorial((j4 + j3 - z - j5).into())
-            / factorial((j2 + j4 + j6 + 1 - z).into())
-            / factorial((j4 + j5 + j3 + 1 - z).into())
-            * phase(z);
-    }
+    let sum: f64 = (0..=(2 * j4).min(j4 + j6 - j2).min(j4 + j3 - j5))
+        .map(|z| {
+            factorial((2 * j4 - z).into())
+                * factorial((j4 + j6 + j3 - z - j1).into())
+                * factorial((j4 + j6 + j1 + j3 + 1 - z).into())
+                / factorial(z.into())
+                / factorial((j4 + j6 - z - j2).into())
+                / factorial((j4 + j3 - z - j5).into())
+                / factorial((j2 + j4 + j6 + 1 - z).into())
+                / factorial((j4 + j5 + j3 + 1 - z).into())
+                * phase(z)
+        })
+        .sum();
     Ok(sum * fac)
 }
 
@@ -411,11 +412,10 @@ fn is_unphysical(j1: u32, j2: u32, j3: u32, m1: i32, m2: i32, m3: i32) -> Option
     }
 }
 
-
 #[cfg(test)]
 mod tests {
-    use crate::truths::return_3j_truths;
     use super::*;
+    use crate::truths::return_3j_truths;
     use std::f64::consts::PI;
 
     //We allow floating point errors on the scale of TOL.

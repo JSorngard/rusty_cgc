@@ -1,7 +1,5 @@
 pub mod wigner;
 
-use wigner::{wigner_3j, wigner_6j, wigner_9j};
-
 #[cfg(test)]
 #[macro_use]
 extern crate approx;
@@ -11,12 +9,8 @@ mod truths;
 
 #[cfg(test)]
 mod tests {
-    use super::*;
     use crate::truths::return_3j_truths;
-    use crate::wigner::clebsch_gordan;
-    use crate::wigner::gaunt;
-    use crate::wigner::wigner_d;
-    use crate::wigner::wigner_small_d;
+    use crate::wigner::*;
     use std::f64::consts::PI;
 
     //We allow floating point errors on the scale of TOL.

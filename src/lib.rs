@@ -413,7 +413,7 @@ fn is_unphysical(j1: u32, j2: u32, j3: u32, m1: i32, m2: i32, m3: i32) -> Option
 #[cfg(test)]
 mod tests {
     use crate::truths::return_3j_truths;
-    use crate::wigner::*;
+    use super::*;
     use std::f64::consts::PI;
 
     //We allow floating point errors on the scale of TOL.

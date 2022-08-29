@@ -109,7 +109,7 @@ pub fn wigner_6j(j1: u32, j2: u32, j3: u32, j4: u32, j5: u32, j6: u32) -> Result
 }
 
 /// This function fails for some inputs, and I have not figured out why yet
-pub fn wigner_9j(
+fn wigner_9j(
     j1: u32,
     j2: u32,
     j3: u32,

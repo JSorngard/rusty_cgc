@@ -38,15 +38,15 @@ pub fn wigner_3j(j1: u32, j2: u32, j3: u32, m1: i32, m2: i32, m3: i32) -> Result
         return Err(e);
     };
 
-    let (j1, j2, j3, m1, m2, m3, mut sign) = reorder3j(j1, j2, j3, m1, m2, m3, 1.0);
+    let (j1, j2, j3, m1, m2, m3, mut sign) = reorder3j(j1, j2, j3, m1, m2, m3, 1);
 
     if (i64::from(j1) - i64::from(j2) - i64::from(m3)) % 2 != 0 {
-        sign *= -1.0
+        sign *= -1
     }
 
     let cg = clebsch_gordan(j1, j2, j3, m1, m2, -m3)?;
 
-    Ok(sign * cg / (2.0 * f64::from(j3) + 1.0).sqrt())
+    Ok(f64::from(sign) * cg / (2.0 * f64::from(j3) + 1.0).sqrt())
 }
 
 /// Reorder j1/m1, j2/m2, j3/m3 such that j1 >= j2 >= j3 and m1 >= 0 or m1 == 0 && m2 >= 0
@@ -57,8 +57,8 @@ fn reorder3j(
     m1: i32,
     m2: i32,
     m3: i32,
-    mut sign: f64,
-) -> (u32, u32, u32, i32, i32, i32, f64) {
+    mut sign: i8,
+) -> (u32, u32, u32, i32, i32, i32, i8) {
     //An odd permutation of the columns or a
     //sign change of the m-quantum values (time reversal)
     //give a phase factor of (-1)^(j1+j2+j3).
@@ -73,7 +73,7 @@ fn reorder3j(
     } else {
         //Sign doesn't matter if total J = j1 + j2 + j3 is even
         if (j1 + j2 + j3) % 2 == 0 {
-            sign = 1.0;
+            sign = 1;
         }
         (j1, j2, j3, m1, m2, m3, sign)
     }

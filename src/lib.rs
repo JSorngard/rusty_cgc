@@ -44,12 +44,9 @@ pub fn wigner_3j(j1: u32, j2: u32, j3: u32, m1: i32, m2: i32, m3: i32) -> Result
         sign *= -1.0
     }
 
-    Ok(sign
-        * match clebsch_gordan(j1, j2, j3, m1, m2, -m3) {
-            Ok(x) => x,
-            Err(e) => return Err(e),
-        }
-        / (2.0 * f64::from(j3) + 1.0).sqrt())
+    let cg = clebsch_gordan(j1, j2, j3, m1, m2, -m3)?;
+
+    Ok(sign * cg / (2.0 * f64::from(j3) + 1.0).sqrt())
 }
 
 /// Reorder j1/m1, j2/m2, j3/m3 such that j1 >= j2 >= j3 and m1 >= 0 or m1 == 0 && m2 >= 0

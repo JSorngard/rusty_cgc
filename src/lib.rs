@@ -5,6 +5,7 @@ extern crate approx;
 #[cfg(test)]
 mod truths;
 
+use itertools::Itertools;
 use num::complex::Complex;
 use std::f64::consts::PI;
 
@@ -412,6 +413,68 @@ fn is_unphysical(j1: u32, j2: u32, j3: u32, m1: i32, m2: i32, m3: i32) -> Option
     }
 }
 
+/// Takes in two lists of integers representing a ratio of two sets of factorials
+/// and returns the value of that ratio as an f64.
+/// E.g. an input of [5, 2, 7] and [3, 6] represents the equation (5!*2!*7!)/(3!*6!)
+/// and would give a value of 280.0
+fn ratio_of_factorials(numerators: &[u32], denominators: &[u32]) -> f64 {
+    let mut available_numerators = vec![true; numerators.len()];
+    let mut available_denominators = vec![true; denominators.len()];
+
+    let mut candidate_pairs: Vec<(usize, usize, i64)> = numerators
+        .iter()
+        .enumerate()
+        .cartesian_product(denominators.iter().enumerate())
+        .map(|((i, n), (j, d))| (i, j, i64::from(*n) - i64::from(*d)))
+        .collect();
+
+    candidate_pairs.sort_unstable_by_key(|element| (element.2).abs());
+
+    let mut result = 1.0;
+    for pair in candidate_pairs {
+        if available_numerators[pair.0] && available_denominators[pair.1] {
+            result *= if pair.2 >= 0 {
+                (((denominators[pair.1] + 1)..=numerators[pair.0]).map(f64::from).product())
+            } else {
+                1.0 / (((numerators[pair.0] + 1)..=denominators[pair.1]).map(f64::from).product::<f64>())
+            };
+
+            available_numerators[pair.0] = false;
+            available_denominators[pair.1] = false;
+        }
+
+        if available_numerators.iter().all(|i| !i) || available_denominators.iter().all(|i| !i) {
+            break;
+        }
+    }
+
+    result *= numerators
+        .iter()
+        .enumerate()
+        .filter_map(|(i, e)| {
+            if available_numerators[i] {
+                Some(factorial((*e).into()))
+            } else {
+                None
+            }
+        })
+        .product::<f64>();
+
+    result /= denominators
+        .iter()
+        .enumerate()
+        .filter_map(|(i, e)| {
+            if available_denominators[i] {
+                Some(factorial((*e).into()))
+            } else {
+                None
+            }
+        })
+        .product::<f64>();
+
+    result
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;
@@ -424,6 +487,17 @@ mod tests {
     //errors due to the formulas for 3j symbols containing alternating
     //products and divisions by large factorials.
     const TOL: f64 = 100.0 * f64::EPSILON;
+
+    #[test]
+    fn test_ratio_of_factorials() {
+        assert_relative_eq!(ratio_of_factorials(&[5, 2, 7], &[3, 6]), 280.0);
+        assert_relative_eq!(ratio_of_factorials(&[1, 2, 3], &[0, 5, 8]), 1.0 / 403200.0);
+        assert_relative_eq!(ratio_of_factorials(&[200], &[197]), 7880400.0);
+        assert_relative_eq!(
+            ratio_of_factorials(&[1000000], &[999999, 8]),
+            3125.0 / 126.0
+        );
+    }
 
     #[test]
     fn test_bad_cgc_input() {

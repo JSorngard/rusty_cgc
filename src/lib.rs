@@ -297,19 +297,18 @@ pub fn clebsch_gordan(j1: u32, j2: u32, j3: u32, m1: i32, m2: i32, m3: i32) -> R
     };
     let nm = if ia2 <= ia1 { ia2 } else { ia1 };
 
-    let cc = f64::sqrt(
-        //All inputs to the factorials will be >= 0, so casting to u64 loses no sign information
-        f64::from(2 * j3 + 1) * factorial((j3 + j1 - j2).into())
-            / factorial((j1 + j2 + j3 + 1).into())
-            * factorial(ia1.into())
-            * factorial((j1 + j2 - j3).into())
-            / factorial(j_plus_m(j1, -m1).into())
-            / factorial(j_plus_m(j2, -m2).into())
-            * factorial(ia2.into())
-            / factorial(j_plus_m(j2, m2).into())
-            * factorial(j_plus_m(j3, -m3).into())
-            / factorial(j_plus_m(j1, m1).into()),
-    );
+    let cc = (f64::from(2 * j3 + 1)
+        * ratio_of_factorials(
+            &[j3 + j1 - j2, ia1, j1 + j2 - j3, ia2, j_plus_m(j3, -m3)],
+            &[
+                j1 + j2 + j3 + 1,
+                j_plus_m(j1, -m1),
+                j_plus_m(j2, -m2),
+                j_plus_m(j2, m2),
+                j_plus_m(j1, m1),
+            ],
+        ))
+    .sqrt();
 
     let mut ip1 = if m1 >= 0 {
         j2 + j3 + (m1 as u32)
@@ -325,10 +324,9 @@ pub fn clebsch_gordan(j1: u32, j2: u32, j3: u32, m1: i32, m2: i32, m3: i32) -> R
     } else {
         j1 + ni + 1 - (m3 as u32)
     } - j2; //j1 + ni + 1 - j2 - m3
-            //Same here: all inputs to the factorials will be >= 0, so casting to u64 loses no sign information
-    let mut s1 = phase(ni + j_plus_m(j2, m2)) * factorial(ip1.into()) / factorial(ir2.into())
-        * factorial((ip2 - 1).into())
-        / (factorial(ni.into()) * factorial(ir3.into()) * factorial((ir4 - 1).into()));
+    
+    let mut s1 = phase(ni + j_plus_m(j2, m2))
+        * ratio_of_factorials(&[ip1, ip2 - 1], &[ir2, ni, ir3, ir4 - 1]);
 
     let n = nm - ni;
     let mut fa;
@@ -417,10 +415,10 @@ fn is_unphysical(j1: u32, j2: u32, j3: u32, m1: i32, m2: i32, m3: i32) -> Option
 /// and returns the value of that ratio as an `f64`.
 /// E.g. an input of [5, 2, 7] and [3, 6] represents the equation (5!*2!*7!)/(3!*6!)
 /// and would give a value of 280.0
-/// 
-/// Can handle large factorials, as long as both the numerator and denominator 
+///
+/// Can handle large factorials, as long as both the numerator and denominator
 /// have factorials of similar size.
-/// 
+///
 /// # Example
 /// ```
 /// # use rusty_cgc::ratio_of_factorials;
@@ -443,9 +441,13 @@ pub fn ratio_of_factorials(numerators: &[u32], denominators: &[u32]) -> f64 {
     for pair in candidate_pairs {
         if available_numerators[pair.0] && available_denominators[pair.1] {
             result *= if pair.2 >= 0 {
-                ((denominators[pair.1] + 1)..=numerators[pair.0]).map(f64::from).product()
+                ((denominators[pair.1] + 1)..=numerators[pair.0])
+                    .map(f64::from)
+                    .product()
             } else {
-                1.0 / ((numerators[pair.0] + 1)..=denominators[pair.1]).map(f64::from).product::<f64>()
+                1.0 / ((numerators[pair.0] + 1)..=denominators[pair.1])
+                    .map(f64::from)
+                    .product::<f64>()
             };
 
             available_numerators[pair.0] = false;

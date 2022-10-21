@@ -414,7 +414,7 @@ fn is_unphysical(j1: u32, j2: u32, j3: u32, m1: i32, m2: i32, m3: i32) -> Option
 }
 
 /// Takes in two lists of integers representing a ratio of two sets of factorials
-/// and returns the value of that ratio as an f64.
+/// and returns the value of that ratio as an `f64`.
 /// E.g. an input of [5, 2, 7] and [3, 6] represents the equation (5!*2!*7!)/(3!*6!)
 /// and would give a value of 280.0
 /// 

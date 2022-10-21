@@ -95,28 +95,34 @@ pub fn wigner_6j(j1: u32, j2: u32, j3: u32, j4: u32, j5: u32, j6: u32) -> Result
     }
 
     //The arguments to the factorials should always be positive
-    let fac: f64 = delta(j2, j4, j6) * delta(j2, j1, j3) / factorial((j2 + j4 - j6).into())
+    let fac = delta(j2, j4, j6)
+        * delta(j2, j1, j3)
         * delta(j6, j5, j1)
-        / factorial((j6 + j1 - j5).into())
-        * factorial((j2 + j4 + j6 + 1).into())
-        / factorial((j6 + j5 - j1).into())
         * delta(j4, j5, j3)
-        / factorial((j2 + j3 - j1).into())
-        * factorial((j4 + j5 + j3 + 1).into())
-        / factorial((j1 + j3 - j2).into())
-        / factorial((j4 + j5 - j3).into())
+        * ratio_of_factorials(
+            &[j2 + j4 + j6 + 1, j4 + j5 + j3 + 1],
+            &[
+                j2 + j4 - j6,
+                j6 + j1 - j5,
+                j6 + j5 - j1,
+                j2 + j3 - j1,
+                j1 + j3 - j2,
+                j4 + j5 - j3,
+            ],
+        )
         * phase(j4 + j6 + j1 + j3);
     let sum: f64 = (0..=(2 * j4).min(j4 + j6 - j2).min(j4 + j3 - j5))
         .map(|z| {
-            factorial((2 * j4 - z).into())
-                * factorial((j4 + j6 + j3 - z - j1).into())
-                * factorial((j4 + j6 + j1 + j3 + 1 - z).into())
-                / factorial(z.into())
-                / factorial((j4 + j6 - z - j2).into())
-                / factorial((j4 + j3 - z - j5).into())
-                / factorial((j2 + j4 + j6 + 1 - z).into())
-                / factorial((j4 + j5 + j3 + 1 - z).into())
-                * phase(z)
+            ratio_of_factorials(
+                &[2 * j4 - z, j4 + j6 + j3 - z - j1, j4 + j6 + j1 + j3 + 1 - z],
+                &[
+                    z,
+                    j4 + j6 - z - j2,
+                    j4 + j3 - z - j5,
+                    j2 + j4 + j6 + 1 - z,
+                    j4 + j5 + j3 + 1 - z,
+                ],
+            ) * phase(z)
         })
         .sum();
     Ok(sum * fac)
@@ -214,19 +220,17 @@ pub fn gaunt(l1: u32, l2: u32, l3: u32, m1: i32, m2: i32, m3: i32) -> Result<f64
 /// The inputs are debug_asserted to be triangular.
 fn delta(a: u32, b: u32, c: u32) -> f64 {
     debug_assert!(a + c >= b && a + b >= c && b + c >= a);
-    (factorial((a + c - b).into()) * factorial((a + b - c).into())
-        / factorial((a + c + b + 1).into())
-        * factorial((c + b - a).into()))
-    .sqrt()
+    ratio_of_factorials(&[a + c - b, a + b - c, c + b - a], &[a + c + b + 1]).sqrt()
 }
 
 /// Returns the value of the \nabla(abc) triangle coefficient used in the computation of 9j symbols.
 /// The inputs are debug_asserted to be triangular.
 fn nabla(a: u32, b: u32, c: u32) -> f64 {
     debug_assert!(a + c >= b && a + b >= c && b + c >= a);
-    (factorial((a + c - b).into()) * factorial((a + b - c).into()) / factorial((b + c - a).into())
-        * factorial((a + b + c + 1).into()))
-    .sqrt()
+    ratio_of_factorials(&[a + c - b, a + b - c, a + b + c + 1], &[b + c - a]).sqrt()
+    // (factorial((a + c - b).into()) * factorial((a + b - c).into()) / factorial((b + c - a).into())
+    //     * factorial((a + b + c + 1).into()))
+    // .sqrt()
 }
 
 /// Returns the value of the small Wigner d-matrix in the z-y-z convention.
@@ -324,7 +328,7 @@ pub fn clebsch_gordan(j1: u32, j2: u32, j3: u32, m1: i32, m2: i32, m3: i32) -> R
     } else {
         j1 + ni + 1 - (m3 as u32)
     } - j2; //j1 + ni + 1 - j2 - m3
-    
+
     let mut s1 = phase(ni + j_plus_m(j2, m2))
         * ratio_of_factorials(&[ip1, ip2 - 1], &[ir2, ni, ir3, ir4 - 1]);
 

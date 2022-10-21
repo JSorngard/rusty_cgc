@@ -436,50 +436,57 @@ fn is_unphysical(j1: u32, j2: u32, j3: u32, m1: i32, m2: i32, m3: i32) -> Option
 /// assert_eq!(ratio_of_factorials(&[1000000], &[999999, 8]), 3125.0 / 126.0);
 /// ```
 pub fn ratio_of_factorials(numerators: &[u32], denominators: &[u32]) -> f64 {
+    let mut numerators = numerators.to_vec();
+    numerators.sort_unstable();
+    numerators = numerators.into_iter().rev().collect();
+
+    let mut denominators = denominators.to_vec();
+    denominators.sort_unstable();
+    denominators = denominators.into_iter().rev().collect();
+
     let mut available_numerators = vec![true; numerators.len()];
     let mut available_denominators = vec![true; denominators.len()];
 
     // In this function we pair up the arguments in the numerator and denominator
     // in order to find pairs of similar values.
-    let mut candidate_pairs: Vec<(usize, usize, i64)> = numerators
-        .iter()
-        .enumerate()
-        .cartesian_product(denominators.iter().enumerate())
-        .map(|((i, n), (j, d))| (i, j, i64::from(*n) - i64::from(*d)))
-        .collect();
+    // let mut candidate_pairs: Vec<(usize, usize, i64, u32, u32)> = numerators
+    //     .iter()
+    //     .enumerate()
+    //     .cartesian_product(denominators.iter().enumerate())
+    //     .map(|((i, n), (j, d))| (i, j, i64::from(*n) - i64::from(*d), *n, *d))
+    //     .collect();
 
     // Then we sort the numerator-denominator pairs in order of decreasing similarity.
-    candidate_pairs.sort_unstable_by_key(|element| (element.2).abs());
+    //candidate_pairs.sort_unstable_by_key(|element| (element.2).abs());
 
+    let mut candidate_pairs: Vec<(usize, usize, i64)> = Vec::new();
+
+    for (i, n) in numerators.iter().enumerate() {
+        match denominators.iter().enumerate().filter(|(j, d)| available_denominators[*j]).next() {
+            Some((j, d)) => {
+                available_numerators[i] = false;
+                available_denominators[j] = false;
+                candidate_pairs.push((i, j, i64::from(*n)-i64::from(*d)));
+            },
+            None => break,
+        }
+    }
+    
     // The goal here is to find all the most similar pairs without double counting anything.
     let mut result = 1.0;
     for pair in candidate_pairs {
-        // For each pair we check if the numerator and denominator are still unused
-        if available_numerators[pair.0] && available_denominators[pair.1] {
-            let num = numerators[pair.0];
-            let den = denominators[pair.1];
+        let num = numerators[pair.0];
+        let den = denominators[pair.1];
 
-            // If they are we cancel them against each other,
-            // so 7!/5! becomes just 6*7.
-            // This shrinks the largest numbers
-            // that show up during the computation.
-            result *= if pair.2 >= 0 {
-                ((den + 1)..=num).map(f64::from).product()
-            } else {
-                1.0 / ((num + 1)..=den).map(f64::from).product::<f64>()
-            };
-
-            // After a pair has been used, we mark
-            // the involved numerator and denominator
-            // as no longer available for pairing.
-            available_numerators[pair.0] = false;
-            available_denominators[pair.1] = false;
-        }
-
-        // If either there are no more available numerators or denominators we break out of the loop.
-        if available_numerators.iter().all(|i| !i) || available_denominators.iter().all(|i| !i) {
-            break;
-        }
+        // Cancel each pair member against the other,
+        // so 7!/5! becomes just 6*7.
+        // This shrinks the largest numbers
+        // that show up during the computation.
+        result *= if pair.2 >= 0 {
+            ((den + 1)..=num).map(f64::from).product()
+        } else {
+            1.0 / ((num + 1)..=den).map(f64::from).product::<f64>()
+        };
     }
 
     // Then we multiply in the factorials of the remaining numerators

@@ -454,7 +454,7 @@ pub fn ratio_of_factorials(numerators: &[u32], denominators: &[u32]) -> f64 {
     // The goal here is to find all the most similar pairs without double counting anything.
     let mut result = 1.0;
     for pair in candidate_pairs {
-        // Foe each pair we check if the numerator and denominator are still unused
+        // For each pair we check if the numerator and denominator are still unused
         if available_numerators[pair.0] && available_denominators[pair.1] {
             // If they are we cancel them against each other,
             // so 7!/5! becomes just 6*7.

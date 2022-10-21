@@ -456,8 +456,7 @@ pub fn ratio_of_factorials(mut numerators: Vec<u32>, mut denominators: Vec<u32>)
         match denominators
             .iter()
             .enumerate()
-            .filter(|(j, d)| unpaired_denominators[*j])
-            .next()
+            .find(|(j, _)| unpaired_denominators[*j])
         {
             // and if we can find a denominator (largest first)
             Some((j, d)) => {

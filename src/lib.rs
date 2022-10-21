@@ -57,7 +57,7 @@ fn reorder3j(
     m1: i32,
     m2: i32,
     m3: i32,
-    mut sign: i8,
+    sign: i8,
 ) -> (u32, u32, u32, i32, i32, i32, i8) {
     //An odd permutation of the columns or a
     //sign change of the m-quantum values (time reversal)
@@ -71,11 +71,15 @@ fn reorder3j(
     } else if m1 < 0 || (m1 == 0 && m2 < 0) {
         reorder3j(j1, j2, j3, -m1, -m2, -m3, -sign)
     } else {
-        //Sign doesn't matter if total J = j1 + j2 + j3 is even
-        if (j1 + j2 + j3) % 2 == 0 {
-            sign = 1;
-        }
-        (j1, j2, j3, m1, m2, m3, sign)
+        (
+            j1,
+            j2,
+            j3,
+            m1,
+            m2,
+            m3, //Sign doesn't matter if total J = j1 + j2 + j3 is even
+            if (j1 + j2 + j3) % 2 == 0 { 1 } else { sign },
+        )
     }
 }
 
@@ -259,13 +263,10 @@ pub fn wigner_d(
     beta: f64,
     gamma: f64,
 ) -> Result<Complex<f64>, String> {
-    let d = match wigner_small_d(j, mp, m, beta) {
-        Ok(x) => x,
-        Err(x) => return Err(x),
-    };
-    Ok((-1.0 * Complex::<f64>::i() * (mp as f64) * alpha).exp()
-        * d
-        * (-1.0 * Complex::<f64>::i() * (m as f64) * gamma).exp())
+    Ok(
+        (wigner_small_d(j, mp, m, beta)? * -1.0 * Complex::<f64>::i() * (mp as f64) * alpha).exp()
+            * (-1.0 * Complex::<f64>::i() * (m as f64) * gamma).exp(),
+    )
 }
 
 /// Returns the value of the Clebsch-Gordan coefficient for

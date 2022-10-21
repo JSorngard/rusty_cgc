@@ -456,18 +456,17 @@ pub fn ratio_of_factorials(numerators: &[u32], denominators: &[u32]) -> f64 {
     for pair in candidate_pairs {
         // For each pair we check if the numerator and denominator are still unused
         if available_numerators[pair.0] && available_denominators[pair.1] {
+            let num = numerators[pair.0];
+            let den = denominators[pair.1];
+
             // If they are we cancel them against each other,
             // so 7!/5! becomes just 6*7.
             // This shrinks the largest numbers
             // that show up during the computation.
             result *= if pair.2 >= 0 {
-                ((denominators[pair.1] + 1)..=numerators[pair.0])
-                    .map(f64::from)
-                    .product()
+                ((den + 1)..=num).map(f64::from).product()
             } else {
-                1.0 / ((numerators[pair.0] + 1)..=denominators[pair.1])
-                    .map(f64::from)
-                    .product::<f64>()
+                1.0 / ((num + 1)..=den).map(f64::from).product::<f64>()
             };
 
             // After a pair has been used, we mark

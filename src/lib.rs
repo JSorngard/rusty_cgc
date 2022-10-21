@@ -448,7 +448,7 @@ pub fn ratio_of_factorials(numerators: &[u32], denominators: &[u32]) -> f64 {
         .map(|((i, n), (j, d))| (i, j, i64::from(*n) - i64::from(*d)))
         .collect();
 
-    // Then we sort the numerator-denominator pairs in order of dereasing similarity.
+    // Then we sort the numerator-denominator pairs in order of decreasing similarity.
     candidate_pairs.sort_unstable_by_key(|element| (element.2).abs());
 
     // The goal here is to find all the most similar pairs without double counting anything.

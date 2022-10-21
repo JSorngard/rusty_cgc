@@ -160,32 +160,39 @@ fn wigner_9j(
         for y in 0..=(j3 + j9 - j6).min(j4 + j5 - j6) {
             for z in 0..=(j1 + j7 - j4).min(j1 + j2 - j3) {
                 if j4 + j9 + x + z < j1 + j8
-                    || j2 + j6 + x + z < j4 + j8
+                    || j2 + j6 + x + y < j4 + j8
                     || j1 + j2 + j9 < j6 + y + z
                 {
                     continue;
                 }
-                sum += phase(x + y + z) * factorial((2 * j8 - x).into())
-                    / factorial(x.into())
-                    / factorial((j5 + j8 - x - j2).into())
-                    * factorial((j2 + j5 + x - j8).into())
-                    / factorial((j7 + j8 - j9 - x).into())
-                    / factorial((j2 + j6 + x + y - j8 - j4).into())//fails with overflow for some inputs
-                    * factorial((j7 + j9 + x - j8).into())
-                    / factorial((j4 + j9 + x + z - j1 - j8).into())
-                    / factorial(y.into())
-                    * factorial((j5 + j6 + y - j4).into())
-                    / factorial((j4 + j5 - j6 - y).into())
-                    * factorial((j3 + j6 + y - j9).into())
-                    / factorial((j3 + j9 - y - j6).into())
-                    / factorial((2 * j6 + 1 + y).into())
-                    * factorial((j1 + j2 + j9 - y - z - j6).into())
-                    / factorial(z.into())
-                    / factorial((j1 + j2 - j3 - z).into())
-                    * factorial((2 * j1 - z).into())
-                    / factorial((j1 + j7 - z - j4).into())
-                    * factorial((j4 + j7 + z - j1).into())
-                    / factorial((j1 + j2 + j3 + 1 - z).into());
+                sum += phase(x + y + z)
+                    * ratio_of_factorials(
+                        &[
+                            2 * j8 - x,
+                            j2 + j5 + x - j8,
+                            j7 + j9 + x - j8,
+                            j5 + j6 + y - j4,
+                            j3 + j6 + y - j9,
+                            j1 + j2 + j9 - y - z - j6,
+                            2 * j1 - z,
+                            j4 + j7 + z - j1,
+                        ],
+                        &[
+                            x,
+                            j5 + j8 - x - j2,
+                            j7 + j8 - j9 - x,
+                            j2 + j6 + x + y - j8 - j4,
+                            j4 + j9 + x + z - j1 - j8,
+                            y,
+                            j4 + j5 - j6 - y,
+                            j3 + j9 - y - j6,
+                            2 * j6 + 1 + y,
+                            z,
+                            j1 + j2 - j3 - z,
+                            j1 + j7 - z - j4,
+                            j1 + j2 + j3 + 1 - z,
+                        ],
+                    );
             }
         }
     }

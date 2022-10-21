@@ -5,7 +5,6 @@ extern crate approx;
 #[cfg(test)]
 mod truths;
 
-use itertools::Itertools;
 use num::complex::Complex;
 use std::f64::consts::PI;
 
@@ -451,7 +450,7 @@ pub fn ratio_of_factorials(mut numerators: Vec<u32>, mut denominators: Vec<u32>)
     let mut unpaired_denominators = vec![true; denominators.len()];
 
     // Then we loop through the numerators (largest first)
-    let mut candidate_pairs: Vec<(usize, usize, i64)> = Vec::new();
+    let mut pairs: Vec<(usize, usize, i64)> = Vec::new();
     for (i, n) in numerators.iter().enumerate() {
         match denominators
             .iter()
@@ -463,14 +462,15 @@ pub fn ratio_of_factorials(mut numerators: Vec<u32>, mut denominators: Vec<u32>)
                 unpaired_numerators[i] = false;
                 unpaired_denominators[j] = false;
                 // we pair them up
-                candidate_pairs.push((i, j, i64::from(*n) - i64::from(*d)));
+                pairs.push((i, j, i64::from(*n) - i64::from(*d)));
             }
+            // if we are out of denominators we end the loop
             None => break,
         }
     }
 
     let mut result = 1.0;
-    for pair in candidate_pairs {
+    for pair in pairs {
         let num = numerators[pair.0];
         let den = denominators[pair.1];
 

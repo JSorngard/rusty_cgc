@@ -100,8 +100,8 @@ pub fn wigner_6j(j1: u32, j2: u32, j3: u32, j4: u32, j5: u32, j6: u32) -> Result
         * delta(j6, j5, j1)
         * delta(j4, j5, j3)
         * ratio_of_factorials(
-            &[j2 + j4 + j6 + 1, j4 + j5 + j3 + 1],
-            &[
+            vec![j2 + j4 + j6 + 1, j4 + j5 + j3 + 1],
+            vec![
                 j2 + j4 - j6,
                 j6 + j1 - j5,
                 j6 + j5 - j1,
@@ -114,8 +114,8 @@ pub fn wigner_6j(j1: u32, j2: u32, j3: u32, j4: u32, j5: u32, j6: u32) -> Result
     let sum: f64 = (0..=(2 * j4).min(j4 + j6 - j2).min(j4 + j3 - j5))
         .map(|z| {
             ratio_of_factorials(
-                &[2 * j4 - z, j4 + j6 + j3 - z - j1, j4 + j6 + j1 + j3 + 1 - z],
-                &[
+                vec![2 * j4 - z, j4 + j6 + j3 - z - j1, j4 + j6 + j1 + j3 + 1 - z],
+                vec![
                     z,
                     j4 + j6 - z - j2,
                     j4 + j3 - z - j5,
@@ -167,7 +167,7 @@ fn wigner_9j(
                 }
                 sum += phase(x + y + z)
                     * ratio_of_factorials(
-                        &[
+                        vec![
                             2 * j8 - x,
                             j2 + j5 + x - j8,
                             j7 + j9 + x - j8,
@@ -177,7 +177,7 @@ fn wigner_9j(
                             2 * j1 - z,
                             j4 + j7 + z - j1,
                         ],
-                        &[
+                        vec![
                             x,
                             j5 + j8 - x - j2,
                             j7 + j8 - j9 - x,
@@ -227,14 +227,14 @@ pub fn gaunt(l1: u32, l2: u32, l3: u32, m1: i32, m2: i32, m3: i32) -> Result<f64
 /// The inputs are debug_asserted to be triangular.
 fn delta(a: u32, b: u32, c: u32) -> f64 {
     debug_assert!(a + c >= b && a + b >= c && b + c >= a);
-    ratio_of_factorials(&[a + c - b, a + b - c, c + b - a], &[a + c + b + 1]).sqrt()
+    ratio_of_factorials(vec![a + c - b, a + b - c, c + b - a], vec![a + c + b + 1]).sqrt()
 }
 
 /// Returns the value of the \nabla(abc) triangle coefficient used in the computation of 9j symbols.
 /// The inputs are debug_asserted to be triangular.
 fn nabla(a: u32, b: u32, c: u32) -> f64 {
     debug_assert!(a + c >= b && a + b >= c && b + c >= a);
-    ratio_of_factorials(&[a + c - b, a + b - c, a + b + c + 1], &[b + c - a]).sqrt()
+    ratio_of_factorials(vec![a + c - b, a + b - c, a + b + c + 1], vec![b + c - a]).sqrt()
     // (factorial((a + c - b).into()) * factorial((a + b - c).into()) / factorial((b + c - a).into())
     //     * factorial((a + b + c + 1).into()))
     // .sqrt()
@@ -310,8 +310,8 @@ pub fn clebsch_gordan(j1: u32, j2: u32, j3: u32, m1: i32, m2: i32, m3: i32) -> R
 
     let cc = (f64::from(2 * j3 + 1)
         * ratio_of_factorials(
-            &[j3 + j1 - j2, ia1, j1 + j2 - j3, ia2, j_plus_m(j3, -m3)],
-            &[
+            vec![j3 + j1 - j2, ia1, j1 + j2 - j3, ia2, j_plus_m(j3, -m3)],
+            vec![
                 j1 + j2 + j3 + 1,
                 j_plus_m(j1, -m1),
                 j_plus_m(j2, -m2),
@@ -337,7 +337,7 @@ pub fn clebsch_gordan(j1: u32, j2: u32, j3: u32, m1: i32, m2: i32, m3: i32) -> R
     } - j2; //j1 + ni + 1 - j2 - m3
 
     let mut s1 = phase(ni + j_plus_m(j2, m2))
-        * ratio_of_factorials(&[ip1, ip2 - 1], &[ir2, ni, ir3, ir4 - 1]);
+        * ratio_of_factorials(vec![ip1, ip2 - 1], vec![ir2, ni, ir3, ir4 - 1]);
 
     let n = nm - ni;
     let mut fa;
@@ -433,46 +433,43 @@ fn is_unphysical(j1: u32, j2: u32, j3: u32, m1: i32, m2: i32, m3: i32) -> Option
 /// # Example
 /// ```
 /// # use rusty_cgc::ratio_of_factorials;
-/// assert_eq!(ratio_of_factorials(&[1000000], &[999999, 8]), 3125.0 / 126.0);
+/// assert_eq!(ratio_of_factorials(vec![1000000], vec![999999, 8]), 3125.0 / 126.0);
 /// ```
-pub fn ratio_of_factorials(numerators: &[u32], denominators: &[u32]) -> f64 {
-    let mut numerators = numerators.to_vec();
+pub fn ratio_of_factorials(mut numerators: Vec<u32>, mut denominators: Vec<u32>) -> f64 {
+    // In this function we pair up the arguments in the numerator and denominator
+    // in order to find pairs of similar values.
+
+    // We begin by ordering the terms in descending order
     numerators.sort_unstable();
     numerators = numerators.into_iter().rev().collect();
 
-    let mut denominators = denominators.to_vec();
     denominators.sort_unstable();
     denominators = denominators.into_iter().rev().collect();
 
-    let mut available_numerators = vec![true; numerators.len()];
-    let mut available_denominators = vec![true; denominators.len()];
+    // These will keep track of which terms remain unpaired
+    let mut unpaired_numerators = vec![true; numerators.len()];
+    let mut unpaired_denominators = vec![true; denominators.len()];
 
-    // In this function we pair up the arguments in the numerator and denominator
-    // in order to find pairs of similar values.
-    // let mut candidate_pairs: Vec<(usize, usize, i64, u32, u32)> = numerators
-    //     .iter()
-    //     .enumerate()
-    //     .cartesian_product(denominators.iter().enumerate())
-    //     .map(|((i, n), (j, d))| (i, j, i64::from(*n) - i64::from(*d), *n, *d))
-    //     .collect();
-
-    // Then we sort the numerator-denominator pairs in order of decreasing similarity.
-    //candidate_pairs.sort_unstable_by_key(|element| (element.2).abs());
-
+    // Then we loop through the numerators (largest first)
     let mut candidate_pairs: Vec<(usize, usize, i64)> = Vec::new();
-
     for (i, n) in numerators.iter().enumerate() {
-        match denominators.iter().enumerate().filter(|(j, d)| available_denominators[*j]).next() {
+        match denominators
+            .iter()
+            .enumerate()
+            .filter(|(j, d)| unpaired_denominators[*j])
+            .next()
+        {
+            // and if we can find a denominator (largest first)
             Some((j, d)) => {
-                available_numerators[i] = false;
-                available_denominators[j] = false;
-                candidate_pairs.push((i, j, i64::from(*n)-i64::from(*d)));
-            },
+                unpaired_numerators[i] = false;
+                unpaired_denominators[j] = false;
+                // we pair them up
+                candidate_pairs.push((i, j, i64::from(*n) - i64::from(*d)));
+            }
             None => break,
         }
     }
-    
-    // The goal here is to find all the most similar pairs without double counting anything.
+
     let mut result = 1.0;
     for pair in candidate_pairs {
         let num = numerators[pair.0];
@@ -494,7 +491,7 @@ pub fn ratio_of_factorials(numerators: &[u32], denominators: &[u32]) -> f64 {
         .iter()
         .enumerate()
         .filter_map(|(i, e)| {
-            if available_numerators[i] {
+            if unpaired_numerators[i] {
                 Some(factorial((*e).into()))
             } else {
                 None
@@ -507,7 +504,7 @@ pub fn ratio_of_factorials(numerators: &[u32], denominators: &[u32]) -> f64 {
         .iter()
         .enumerate()
         .filter_map(|(i, e)| {
-            if available_denominators[i] {
+            if unpaired_denominators[i] {
                 Some(factorial((*e).into()))
             } else {
                 None
@@ -533,11 +530,14 @@ mod tests {
 
     #[test]
     fn test_ratio_of_factorials() {
-        assert_relative_eq!(ratio_of_factorials(&[5, 2, 7], &[3, 6]), 280.0);
-        assert_relative_eq!(ratio_of_factorials(&[1, 2, 3], &[0, 5, 8]), 1.0 / 403200.0);
-        assert_relative_eq!(ratio_of_factorials(&[200], &[197]), 7880400.0);
+        assert_relative_eq!(ratio_of_factorials(vec![5, 2, 7], vec![3, 6]), 280.0);
         assert_relative_eq!(
-            ratio_of_factorials(&[1000000], &[999999, 8]),
+            ratio_of_factorials(vec![1, 2, 3], vec![0, 5, 8]),
+            1.0 / 403200.0
+        );
+        assert_relative_eq!(ratio_of_factorials(vec![200], vec![197]), 7880400.0);
+        assert_relative_eq!(
+            ratio_of_factorials(vec![1000000], vec![999999, 8]),
             3125.0 / 126.0
         );
     }

@@ -301,19 +301,6 @@ pub fn clebsch_gordan(j1: u32, j2: u32, j3: u32, m1: i32, m2: i32, m3: i32) -> R
     };
     let nm = if ia2 <= ia1 { ia2 } else { ia1 };
 
-    let cc = (f64::from(2 * j3 + 1)
-        * ratio_of_factorials(
-            vec![j3 + j1 - j2, ia1, j1 + j2 - j3, ia2, j_plus_m(j3, -m3)],
-            vec![
-                j1 + j2 + j3 + 1,
-                j_plus_m(j1, -m1),
-                j_plus_m(j2, -m2),
-                j_plus_m(j2, m2),
-                j_plus_m(j1, m1),
-            ],
-        ))
-    .sqrt();
-
     let mut ip1 = if m1 >= 0 {
         j2 + j3 + (m1 as u32)
     } else {
@@ -349,7 +336,20 @@ pub fn clebsch_gordan(j1: u32, j2: u32, j3: u32, m1: i32, m2: i32, m3: i32) -> R
         }
     }
 
-    let res = cc * s1;
+    let res = (f64::from(2 * j3 + 1)
+        * ratio_of_factorials(
+            vec![j3 + j1 - j2, ia1, j1 + j2 - j3, ia2, j_plus_m(j3, -m3)],
+            vec![
+                j1 + j2 + j3 + 1,
+                j_plus_m(j1, -m1),
+                j_plus_m(j2, -m2),
+                j_plus_m(j2, m2),
+                j_plus_m(j1, m1),
+            ],
+        ))
+    .sqrt()
+        * s1;
+
     if res.abs() < 1e-14 {
         //guard against floating point errors making a zero result non-zero
         Ok(0.0)

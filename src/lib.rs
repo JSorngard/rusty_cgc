@@ -8,27 +8,6 @@ mod truths;
 use num::complex::Complex;
 use std::f64::consts::PI;
 
-enum Sign {
-    Plus,
-    Minus,
-}
-
-impl Sign {
-    fn flipped(self) -> Self {
-        match self {
-            Sign::Plus => Sign::Minus,
-            Sign::Minus => Sign::Plus,
-        }
-    }
-
-    fn flip(&mut self) {
-        match self {
-            Sign::Plus => *self = Sign::Minus,
-            Sign::Minus => *self = Sign::Plus,
-        }
-    }
-}
-
 /// Returns the value of the Wigner 3j symbol for the given integer inputs.
 /// The first three inputs are the angular momentum quantum
 /// numbers, while the last three are the magnetic quantum numbers.
@@ -744,5 +723,26 @@ mod tests {
             gaunt(10, 4, 10, 2, 3, -5).unwrap(),
             1323.0 * (91.0 / (2.0 * PI)).sqrt() / 37145.0
         );
+    }
+}
+
+enum Sign {
+    Plus,
+    Minus,
+}
+
+impl Sign {
+    fn flipped(self) -> Self {
+        match self {
+            Sign::Plus => Sign::Minus,
+            Sign::Minus => Sign::Plus,
+        }
+    }
+
+    fn flip(&mut self) {
+        match self {
+            Sign::Plus => *self = Sign::Minus,
+            Sign::Minus => *self = Sign::Plus,
+        }
     }
 }

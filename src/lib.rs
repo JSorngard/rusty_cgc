@@ -8,6 +8,27 @@ mod truths;
 use num::complex::Complex;
 use std::f64::consts::PI;
 
+enum Sign {
+    Plus,
+    Minus,
+}
+
+impl Sign {
+    fn flipped(self) -> Self {
+        match self {
+            Sign::Plus => Sign::Minus,
+            Sign::Minus => Sign::Plus,
+        }
+    }
+
+    fn flip(&mut self) {
+        match self {
+            Sign::Plus => *self = Sign::Minus,
+            Sign::Minus => *self = Sign::Plus,
+        }
+    }
+}
+
 /// Returns the value of the Wigner 3j symbol for the given integer inputs.
 /// The first three inputs are the angular momentum quantum
 /// numbers, while the last three are the magnetic quantum numbers.
@@ -38,15 +59,18 @@ pub fn wigner_3j(j1: u32, j2: u32, j3: u32, m1: i32, m2: i32, m3: i32) -> Result
         return Err(e);
     };
 
-    let (j1, j2, j3, m1, m2, m3, mut sign) = reorder3j(j1, j2, j3, m1, m2, m3, 1);
+    let (j1, j2, j3, m1, m2, m3, mut sign) = reorder3j(j1, j2, j3, m1, m2, m3, Sign::Plus);
 
     if (i64::from(j1) - i64::from(j2) - i64::from(m3)) % 2 != 0 {
-        sign *= -1
+        sign = sign.flipped();
     }
 
     let cg = clebsch_gordan(j1, j2, j3, m1, m2, -m3)?;
 
-    Ok(f64::from(sign) * cg / (2.0 * f64::from(j3) + 1.0).sqrt())
+    Ok(match sign {
+        Sign::Plus => 1.0,
+        Sign::Minus => -1.0,
+    } * cg / (2.0 * f64::from(j3) + 1.0).sqrt())
 }
 
 /// Reorder j1/m1, j2/m2, j3/m3 such that j1 >= j2 >= j3 and m1 >= 0 or m1 == 0 && m2 >= 0
@@ -57,19 +81,19 @@ fn reorder3j(
     m1: i32,
     m2: i32,
     m3: i32,
-    sign: i8,
-) -> (u32, u32, u32, i32, i32, i32, i8) {
+    sign: Sign,
+) -> (u32, u32, u32, i32, i32, i32, Sign) {
     //An odd permutation of the columns or a
     //sign change of the m-quantum values (time reversal)
     //give a phase factor of (-1)^(j1+j2+j3).
     //If we assume that this phase factor is -1, we are only wrong if j1+j2+j3 is even,
     //which we correct for at the end.
     if j1 < j2 {
-        reorder3j(j2, j1, j3, m2, m1, m3, -sign)
+        reorder3j(j2, j1, j3, m2, m1, m3, sign.flipped())
     } else if j2 < j3 {
-        reorder3j(j1, j3, j2, m1, m3, m2, -sign)
+        reorder3j(j1, j3, j2, m1, m3, m2, sign.flipped())
     } else if m1 < 0 || (m1 == 0 && m2 < 0) {
-        reorder3j(j1, j2, j3, -m1, -m2, -m3, -sign)
+        reorder3j(j1, j2, j3, -m1, -m2, -m3, sign.flipped())
     } else {
         (
             j1,
@@ -78,7 +102,7 @@ fn reorder3j(
             m1,
             m2,
             m3, //Sign doesn't matter if total J = j1 + j2 + j3 is even
-            if (j1 + j2 + j3) % 2 == 0 { 1 } else { sign },
+            if (j1 + j2 + j3) % 2 == 0 { Sign::Plus } else { sign },
         )
     }
 }

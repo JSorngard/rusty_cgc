@@ -127,7 +127,7 @@ pub fn wigner_6j(j1: u32, j2: u32, j3: u32, j4: u32, j5: u32, j6: u32) -> Result
     Ok(sum * fac)
 }
 
-/// This function fails for some inputs, and I have not figured out why yet
+/// Returns the value of the Wigner 9j symbol. Quickly becomes overwhelmed by floating point errors for inputs around 10.
 fn wigner_9j(
     j1: u32,
     j2: u32,

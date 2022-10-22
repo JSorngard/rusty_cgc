@@ -210,15 +210,12 @@ pub fn gaunt(l1: u32, l2: u32, l3: u32, m1: i32, m2: i32, m3: i32) -> Result<f64
         return Err(e);
     };
 
-    let w1 = wigner_3j(l1, l2, l3, 0, 0, 0)?;
-    let w2 = wigner_3j(l1, l2, l3, m1, m2, m3)?;
-
     Ok(
         ((2.0 * f64::from(l1) + 1.0) * (2.0 * f64::from(l2) + 1.0) * (2.0 * f64::from(l3) + 1.0)
             / (4.0 * PI))
             .sqrt()
-            * w1
-            * w2,
+            * wigner_3j(l1, l2, l3, 0, 0, 0)?
+            * wigner_3j(l1, l2, l3, m1, m2, m3)?,
     )
 }
 
@@ -234,9 +231,6 @@ fn delta(a: u32, b: u32, c: u32) -> f64 {
 fn nabla(a: u32, b: u32, c: u32) -> f64 {
     debug_assert!(a + c >= b && a + b >= c && b + c >= a);
     ratio_of_factorials(vec![a + c - b, a + b - c, a + b + c + 1], vec![b + c - a]).sqrt()
-    // (factorial((a + c - b).into()) * factorial((a + b - c).into()) / factorial((b + c - a).into())
-    //     * factorial((a + b + c + 1).into()))
-    // .sqrt()
 }
 
 /// Returns the value of the small Wigner d-matrix in the z-y-z convention.

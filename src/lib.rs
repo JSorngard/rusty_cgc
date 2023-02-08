@@ -49,7 +49,8 @@ pub fn wigner_3j(j1: u32, j2: u32, j3: u32, m1: i32, m2: i32, m3: i32) -> Result
     Ok(match sign {
         Sign::Plus => 1.0,
         Sign::Minus => -1.0,
-    } * cg / (2.0 * f64::from(j3) + 1.0).sqrt())
+    } * cg
+        / (2.0 * f64::from(j3) + 1.0).sqrt())
 }
 
 /// Reorder j1/m1, j2/m2, j3/m3 such that j1 >= j2 >= j3 and m1 >= 0 or m1 == 0 && m2 >= 0
@@ -81,7 +82,11 @@ fn reorder3j(
             m1,
             m2,
             m3, //Sign doesn't matter if total J = j1 + j2 + j3 is even
-            if (j1 + j2 + j3) % 2 == 0 { Sign::Plus } else { sign },
+            if (j1 + j2 + j3) % 2 == 0 {
+                Sign::Plus
+            } else {
+                sign
+            },
         )
     }
 }
@@ -383,20 +388,21 @@ fn is_float_triad(j1: f32, j2: f32, j3: f32) -> bool {
     j3 >= (j1 - j2).abs() && j3 <= j1 + j2 && (j1 + j1 + j3).fract() == 0.0
 }
 
-///Returns the factorial of the input integer as a float
-fn factorial(n: u64) -> f64 {
+///Returns the factorial of the input integer.
+fn factorial(n: u32) -> f64 {
     if n == 0 {
         1.0
     } else {
-        let mut res = 1.0;
-        for i in 2..=n {
-            res *= i as f64;
-        }
-        res
+        (2..=n).map(f64::from).product()
     }
 }
 
-///Returns an f64 with a value of 1.0 if the input is even, and -1.0 if it is odd
+/// Returns the product of all numbers between `a` and `a + n - 1`.
+pub fn pochhammer(a: u32, n: u32) -> f64 {
+    (a..a + n).map(f64::from).product()
+}
+
+/// Returns an f64 with a value of 1.0 if the input is even, and -1.0 if it is odd
 fn phase(x: u32) -> f64 {
     if x % 2 == 0 {
         1.0
@@ -405,7 +411,7 @@ fn phase(x: u32) -> f64 {
     }
 }
 
-///Returns whether the given quantum numbers represent something unphysical in a CG-coeff or 3j symbol.
+/// Returns whether the given quantum numbers represent something unphysical in a CG-coeff or 3j symbol.
 fn is_unphysical(j1: u32, j2: u32, j3: u32, m1: i32, m2: i32, m3: i32) -> Option<String> {
     if m1.unsigned_abs() > j1 && m2.unsigned_abs() > j2 && m3.unsigned_abs() > j3 {
         Some("|m| is larger than its corresponding j".to_owned())
@@ -423,7 +429,7 @@ fn is_unphysical(j1: u32, j2: u32, j3: u32, m1: i32, m2: i32, m3: i32) -> Option
 /// E.g. an input of [5, 2, 7] and [3, 6] represents the equation (5!*2!*7!)/(3!*6!)
 /// and would give a value of 280.0
 ///
-/// Can handle large factorials, as long as both the numerator and denominator
+/// Can handle large factorials accurately as long as both the numerator and denominator
 /// have factorials of similar size.
 ///
 /// # Example
@@ -431,84 +437,64 @@ fn is_unphysical(j1: u32, j2: u32, j3: u32, m1: i32, m2: i32, m3: i32) -> Option
 /// # use rusty_cgc::ratio_of_factorials;
 /// assert_eq!(ratio_of_factorials(vec![1000000], vec![999999, 8]), 3125.0 / 126.0);
 /// ```
+/// # Notes
+/// An empty vector is treated as if it contains a single 1.
 pub fn ratio_of_factorials(mut numerators: Vec<u32>, mut denominators: Vec<u32>) -> f64 {
     // In this function we pair up the arguments in the numerator and denominator
     // in order to find pairs of similar values.
 
     // We begin by ordering the terms in descending order
-    numerators.sort_unstable();
-    numerators = numerators.into_iter().rev().collect();
+    if numerators.len() > 1 {
+        numerators.sort_unstable();
+        numerators.reverse();
+    }
 
-    denominators.sort_unstable();
-    denominators = denominators.into_iter().rev().collect();
+    if denominators.len() > 1 {
+        denominators.sort_unstable();
+        denominators.reverse();
+    }
 
-    // These will keep track of which terms remain unpaired
-    let mut unpaired_numerators = vec![true; numerators.len()];
-    let mut unpaired_denominators = vec![true; denominators.len()];
+    if numerators == denominators {
+        return 1.0;
+    }
 
-    // Then we loop through the numerators (largest first)
-    let mut pairs: Vec<(usize, usize, i64)> = Vec::new();
-    for (i, n) in numerators.iter().enumerate() {
-        match denominators
-            .iter()
-            .enumerate()
-            .find(|(j, _)| unpaired_denominators[*j])
-        {
-            // and if we can find a denominator (largest first)
-            Some((j, d)) => {
-                unpaired_numerators[i] = false;
-                unpaired_denominators[j] = false;
-                // we pair them up
-                pairs.push((i, j, i64::from(*n) - i64::from(*d)));
-            }
-            // if we are out of denominators we end the loop
-            None => break,
+    let mut res = 1.0;
+
+    for (n, d) in numerators.iter().zip(denominators.iter()) {
+        if n > d {
+            res *= pochhammer(d + 1, n - d);
         }
+
+        if d > n {
+            res /= pochhammer(n + 1, d - n);
+        }
+
+        // if n == d the terms cancel out completely, so we do not have to compute anything.
     }
 
-    let mut result = 1.0;
-    for pair in pairs {
-        let num = numerators[pair.0];
-        let den = denominators[pair.1];
+    let nlen = numerators.len();
+    let dlen = denominators.len();
 
-        // Cancel each pair member against the other,
-        // so 7!/5! becomes just 6*7.
-        // This shrinks the largest numbers
-        // that show up during the computation.
-        result *= if pair.2 >= 0 {
-            ((den + 1)..=num).map(f64::from).product()
-        } else {
-            1.0 / ((num + 1)..=den).map(f64::from).product::<f64>()
-        };
+    if nlen > dlen {
+        res *= numerators
+            .into_iter()
+            .skip(dlen)
+            .map(factorial)
+            .product::<f64>();
     }
 
-    // Then we multiply in the factorials of the remaining numerators
-    result *= numerators
-        .iter()
-        .enumerate()
-        .filter_map(|(i, e)| {
-            if unpaired_numerators[i] {
-                Some(factorial((*e).into()))
-            } else {
-                None
-            }
-        })
-        .product::<f64>();
+    if nlen < dlen {
+        res /= denominators
+            .into_iter()
+            .skip(nlen)
+            .map(factorial)
+            .product::<f64>();
+    }
 
-    // and divide away the factorials of the remaining denominators
-    result /= denominators
-        .iter()
-        .enumerate()
-        .filter_map(|(i, e)| {
-            if unpaired_denominators[i] {
-                Some(factorial((*e).into()))
-            } else {
-                None
-            }
-        })
-        .product::<f64>();
+    // if the lengths are equal we have dealt with all terms in the loop, and have nothing left
+    // to do here.
 
-    result
+    res
 }
 
 #[cfg(test)]
@@ -516,6 +502,21 @@ mod tests {
     use super::*;
     use crate::truths::return_3j_truths;
     use std::f64::consts::PI;
+
+    #[test]
+    fn check_pochhammer() {
+        for i in 1..=20 {
+            for j in 1..=20 {
+                assert_eq!(
+                    pochhammer(i, j),
+                    (i..=j + i - 1).map(|n| n as f64).product()
+                );
+                assert_eq!(pochhammer(i, 0), 1.0);
+                assert_eq!(pochhammer(0, j), 0.0);
+            }
+        }
+        assert_eq!(pochhammer(0, 0), 1.0);
+    }
 
     //We allow floating point errors on the scale of TOL.
     //The answers we compare against are exact,

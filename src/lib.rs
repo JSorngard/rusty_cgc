@@ -479,24 +479,22 @@ pub fn ratio_of_factorials(mut numerators: Vec<u32>, mut denominators: Vec<u32>)
 
     match number_of_numerators.cmp(&number_of_denominators) {
         Ordering::Greater => {
-            res *= numerators
+            res * numerators
                 .into_iter()
                 .skip(number_of_denominators)
                 .map(factorial)
                 .product::<f64>()
         }
         Ordering::Less => {
-            res /= denominators
+            res / denominators
                 .into_iter()
                 .skip(number_of_numerators)
                 .map(factorial)
                 .product::<f64>()
         }
-        // if the lengths are equal we have dealt with all terms in the loop, and have nothing left to do here.
-        Ordering::Equal => (),
+        // if the lengths are equal we have dealt with all terms in the loop, and can just return the result.
+        Ordering::Equal => res,
     }
-
-    res
 }
 
 #[cfg(test)]

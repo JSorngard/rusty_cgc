@@ -463,17 +463,20 @@ pub fn ratio_of_factorials(mut numerators: Vec<u32>, mut denominators: Vec<u32>)
 
     let mut res = 1.0;
 
-    for (n, d) in numerators.iter().zip(denominators.iter()) {
-        if n > d {
-            res *= pochhammer(d + 1, n - d);
-        }
+    numerators
+        .iter()
+        .zip(denominators.iter())
+        .for_each(|(n, d)| {
+            if n > d {
+                res *= pochhammer(d + 1, n - d);
+            }
 
-        if d > n {
-            res /= pochhammer(n + 1, d - n);
-        }
+            if d > n {
+                res /= pochhammer(n + 1, d - n);
+            }
 
-        // if n == d the terms cancel out completely, so we do not have to compute anything.
-    }
+            // if n == d the terms cancel out completely, so we do not have to compute anything.
+        });
 
     if number_of_numerators > number_of_denominators {
         res *= numerators

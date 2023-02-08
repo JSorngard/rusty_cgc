@@ -443,13 +443,16 @@ pub fn ratio_of_factorials(mut numerators: Vec<u32>, mut denominators: Vec<u32>)
     // In this function we pair up the arguments in the numerator and denominator
     // in order to find pairs of similar values.
 
+    let number_of_numerators = numerators.len();
+    let number_of_denominators = denominators.len();
+
     // We begin by ordering the terms in descending order
-    if numerators.len() > 1 {
+    if number_of_numerators > 1 {
         numerators.sort_unstable();
         numerators.reverse();
     }
 
-    if denominators.len() > 1 {
+    if number_of_denominators > 1 {
         denominators.sort_unstable();
         denominators.reverse();
     }
@@ -472,21 +475,18 @@ pub fn ratio_of_factorials(mut numerators: Vec<u32>, mut denominators: Vec<u32>)
         // if n == d the terms cancel out completely, so we do not have to compute anything.
     }
 
-    let nlen = numerators.len();
-    let dlen = denominators.len();
-
-    if nlen > dlen {
+    if number_of_numerators > number_of_denominators {
         res *= numerators
             .into_iter()
-            .skip(dlen)
+            .skip(number_of_denominators)
             .map(factorial)
             .product::<f64>();
     }
 
-    if nlen < dlen {
+    if number_of_numerators < number_of_denominators {
         res /= denominators
             .into_iter()
-            .skip(nlen)
+            .skip(number_of_numerators)
             .map(factorial)
             .product::<f64>();
     }

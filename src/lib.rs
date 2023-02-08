@@ -423,8 +423,8 @@ fn is_unphysical(j1: u32, j2: u32, j3: u32, m1: i32, m2: i32, m3: i32) -> Option
 
 /// Takes in two lists of integers representing a ratio of two sets of factorials
 /// and returns the value of that ratio as an `f64`.
-/// E.g. an input of [5, 2, 7] and [3, 6] represents the equation (5!*2!*7!)/(3!*6!)
-/// and would give a value of 280.0
+/// E.g. an input of [5, 2, 7] and [3, 6] represents the equation (5!*2!*7!)/(3!*9!)
+/// and would give a value of 0.5555...
 ///
 /// Can handle large factorials accurately as long as both the numerator and denominator
 /// have factorials of similar size.
@@ -444,6 +444,8 @@ pub fn ratio_of_factorials(mut numerators: Vec<u32>, mut denominators: Vec<u32>)
     let number_of_denominators = denominators.len();
 
     // We begin by ordering the terms in descending order
+    // so the input [5, 2, 7], [3, 9] becomes [7, 5, 2], [9, 3]
+
     if number_of_numerators > 1 {
         numerators.sort_unstable();
         numerators.reverse();
@@ -458,20 +460,31 @@ pub fn ratio_of_factorials(mut numerators: Vec<u32>, mut denominators: Vec<u32>)
         return 1.0;
     }
 
+    // Split into (numerator, denominator) pairs.
+    // So [7, 5, 2], [9, 3] becomes the pairs (7, 9) and (5, 3).
     let res = numerators
         .iter()
         .zip(denominators.iter())
         .fold(1.0, |res, (n, d)| {
             match n.cmp(d) {
+                // n > d => multiply by all the terms in n! that are not cancelled by dividing by d!.
+                // The second pair in the example goes to this branch and we multiply the result by 5 * 4.
                 Ordering::Greater => res * (d + 1..n + 1).map(f64::from).product::<f64>(),
+                // n < d => divide by all the terms in d! that are not cancelled by multiplying by n!.
+                // The first pair in the example goes to this branch and we divide the result by 9 * 8.
                 Ordering::Less => res / (n + 1..d + 1).map(f64::from).product::<f64>(),
-                // if n == d the terms cancel out completely, so we just return the accumulator as is.
+                // if n == d the terms cancel out completely, so we just leave the result as it is.
                 Ordering::Equal => res,
             }
         });
+    // After this the example result is 5/18 = 0.27777...
 
+    // Deal with the unpaired numbers.
+    // The example input has an unpaired 2 in the numerator.
     match number_of_numerators.cmp(&number_of_denominators) {
         Ordering::Greater => {
+            // Multiply the result by the factorials of the remaining numeratrs.
+            // For the example input this results in multiplying the result by 2.
             res * numerators
                 .into_iter()
                 .skip(number_of_denominators)
@@ -479,6 +492,7 @@ pub fn ratio_of_factorials(mut numerators: Vec<u32>, mut denominators: Vec<u32>)
                 .product::<f64>()
         }
         Ordering::Less => {
+            // Divide the result by the factorials of the remaining denominators.
             res / denominators
                 .into_iter()
                 .skip(number_of_numerators)
@@ -488,6 +502,7 @@ pub fn ratio_of_factorials(mut numerators: Vec<u32>, mut denominators: Vec<u32>)
         // if the lengths are equal we have dealt with all terms in the loop, and can just return the result.
         Ordering::Equal => res,
     }
+    // After this the result is 5/18 * 2 = 5/9 = 0.555555...
 }
 
 #[cfg(test)]

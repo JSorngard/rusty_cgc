@@ -7,8 +7,8 @@ mod truths;
 
 use num_complex::Complex;
 
-use std::f64::consts::PI;
 use std::cmp::Ordering;
+use std::f64::consts::PI;
 
 /// Returns the value of the Wigner 3j symbol for the given integer inputs.
 /// The first three inputs are the angular momentum quantum
@@ -469,15 +469,12 @@ pub fn ratio_of_factorials(mut numerators: Vec<u32>, mut denominators: Vec<u32>)
         .iter()
         .zip(denominators.iter())
         .for_each(|(n, d)| {
-            if n > d {
-                res *= pochhammer(d + 1, n - d);
+            match n.cmp(d) {
+                Ordering::Greater => res *= pochhammer(d + 1, n - d),
+                Ordering::Less => res /= pochhammer(n + 1, d - n),
+                // if n == d the terms cancel out completely, so we do not have to compute anything.
+                Ordering::Equal => (),
             }
-
-            if d > n {
-                res /= pochhammer(n + 1, d - n);
-            }
-
-            // if n == d the terms cancel out completely, so we do not have to compute anything.
         });
 
     match number_of_numerators.cmp(&number_of_denominators) {

@@ -249,19 +249,19 @@ pub fn wigner_small_d(j: u32, mp: i32, m: i32, beta: f64) -> Result<f64, String>
     }
 
     let prefactor = f64::sqrt(
-        factorial(j_plus_m(j, mp).into())
-            * factorial(j_plus_m(j, -mp).into())
-            * factorial(j_plus_m(j, m).into())
-            * factorial(j_plus_m(j, -m).into()),
+        factorial(j_plus_m(j, mp))
+            * factorial(j_plus_m(j, -mp))
+            * factorial(j_plus_m(j, m))
+            * factorial(j_plus_m(j, -m)),
     );
     let mut sum: f64 = 0.0;
     for s in (i32::max(0, m - mp) as u32)..=u32::min(j_plus_m(j, m), j_plus_m(j, -mp)) {
         sum += f64::powf((beta / 2.0).cos(), (j_plus_m(j, m) + j_plus_m(j, -mp) - 2 * s).into())//(2 * j + m - mp)
             * f64::powf((beta / 2.0).sin(), (2 * s + u32::try_from(mp - m).unwrap()).into())
-            / (factorial((j_plus_m(j, m) - s).try_into().unwrap())
-                * factorial(s.try_into().unwrap())
-                * factorial((s + u32::try_from(mp - m).unwrap()).try_into().unwrap())
-                * factorial((j_plus_m(j, -mp) - s).try_into().unwrap()))
+            / (factorial((j_plus_m(j, m) - s))
+                * factorial(s)
+                * factorial((s + u32::try_from(mp - m).unwrap()))
+                * factorial((j_plus_m(j, -mp) - s)))
             * phase(s + u32::try_from(mp - m).unwrap()); //(-1)^x = (-1)^(-x) if x is real, and a positive i32 always fits in a u32.
     }
     Ok(sum * prefactor)
@@ -484,9 +484,7 @@ pub fn ratio_of_factorials(mut numerators: Vec<u32>, mut denominators: Vec<u32>)
             .skip(number_of_denominators)
             .map(factorial)
             .product::<f64>();
-    }
-
-    if number_of_numerators < number_of_denominators {
+    } else if number_of_numerators < number_of_denominators {
         res /= denominators
             .into_iter()
             .skip(number_of_numerators)

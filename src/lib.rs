@@ -535,6 +535,7 @@ mod tests {
             ratio_of_factorials(vec![1000000], vec![999999, 8]),
             3125.0 / 126.0
         );
+        assert_eq!(ratio_of_factorials(vec![],vec![]), 1.0);
     }
 
     #[test]

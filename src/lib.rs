@@ -463,17 +463,15 @@ pub fn ratio_of_factorials(mut numerators: Vec<u32>, mut denominators: Vec<u32>)
         return 1.0;
     }
 
-    let mut res = 1.0;
-
-    numerators
+    let res = numerators
         .iter()
         .zip(denominators.iter())
-        .for_each(|(n, d)| {
+        .fold(1.0, |res, (n, d)| {
             match n.cmp(d) {
-                Ordering::Greater => res *= pochhammer(d + 1, n - d),
-                Ordering::Less => res /= pochhammer(n + 1, d - n),
-                // if n == d the terms cancel out completely, so we do not have to compute anything.
-                Ordering::Equal => (),
+                Ordering::Greater => res * pochhammer(d + 1, n - d),
+                Ordering::Less => res / pochhammer(n + 1, d - n),
+                // if n == d the terms cancel out completely, so we just return the accumulator as is.
+                Ordering::Equal => res,
             }
         });
 

@@ -399,11 +399,6 @@ fn factorial(n: u32) -> f64 {
     }
 }
 
-/// Returns the product of all numbers between `a` and `a + n - 1`.
-pub fn pochhammer(a: u32, n: u32) -> f64 {
-    (a..a + n).map(f64::from).product()
-}
-
 /// Returns an f64 with a value of 1.0 if the input is even, and -1.0 if it is odd
 fn phase(x: u32) -> f64 {
     if x % 2 == 0 {
@@ -468,8 +463,8 @@ pub fn ratio_of_factorials(mut numerators: Vec<u32>, mut denominators: Vec<u32>)
         .zip(denominators.iter())
         .fold(1.0, |res, (n, d)| {
             match n.cmp(d) {
-                Ordering::Greater => res * pochhammer(d + 1, n - d),
-                Ordering::Less => res / pochhammer(n + 1, d - n),
+                Ordering::Greater => res * (d + 1..n + 1).map(f64::from).product::<f64>(),
+                Ordering::Less => res / (n + 1..d + 1).map(f64::from).product::<f64>(),
                 // if n == d the terms cancel out completely, so we just return the accumulator as is.
                 Ordering::Equal => res,
             }
@@ -501,21 +496,6 @@ mod tests {
     use crate::truths::return_3j_truths;
     use std::f64::consts::PI;
 
-    #[test]
-    fn check_pochhammer() {
-        for i in 1..=20 {
-            for j in 1..=20 {
-                assert_eq!(
-                    pochhammer(i, j),
-                    (i..=j + i - 1).map(|n| n as f64).product()
-                );
-                assert_eq!(pochhammer(i, 0), 1.0);
-                assert_eq!(pochhammer(0, j), 0.0);
-            }
-        }
-        assert_eq!(pochhammer(0, 0), 1.0);
-    }
-
     //We allow floating point errors on the scale of TOL.
     //The answers we compare against are exact,
     //but we use floats to compute the answers, so we will have
@@ -535,7 +515,7 @@ mod tests {
             ratio_of_factorials(vec![1000000], vec![999999, 8]),
             3125.0 / 126.0
         );
-        assert_eq!(ratio_of_factorials(vec![],vec![]), 1.0);
+        assert_eq!(ratio_of_factorials(vec![], vec![]), 1.0);
     }
 
     #[test]

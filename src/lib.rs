@@ -5,8 +5,10 @@ extern crate approx;
 #[cfg(test)]
 mod truths;
 
-use num::complex::Complex;
+use num_complex::Complex;
+
 use std::f64::consts::PI;
+use std::cmp::Ordering;
 
 /// Returns the value of the Wigner 3j symbol for the given integer inputs.
 /// The first three inputs are the angular momentum quantum
@@ -258,10 +260,10 @@ pub fn wigner_small_d(j: u32, mp: i32, m: i32, beta: f64) -> Result<f64, String>
     for s in (i32::max(0, m - mp) as u32)..=u32::min(j_plus_m(j, m), j_plus_m(j, -mp)) {
         sum += f64::powf((beta / 2.0).cos(), (j_plus_m(j, m) + j_plus_m(j, -mp) - 2 * s).into())//(2 * j + m - mp)
             * f64::powf((beta / 2.0).sin(), (2 * s + u32::try_from(mp - m).unwrap()).into())
-            / (factorial((j_plus_m(j, m) - s))
+            / (factorial(j_plus_m(j, m) - s)
                 * factorial(s)
-                * factorial((s + u32::try_from(mp - m).unwrap()))
-                * factorial((j_plus_m(j, -mp) - s)))
+                * factorial(s + u32::try_from(mp - m).unwrap())
+                * factorial(j_plus_m(j, -mp) - s))
             * phase(s + u32::try_from(mp - m).unwrap()); //(-1)^x = (-1)^(-x) if x is real, and a positive i32 always fits in a u32.
     }
     Ok(sum * prefactor)
@@ -478,22 +480,24 @@ pub fn ratio_of_factorials(mut numerators: Vec<u32>, mut denominators: Vec<u32>)
             // if n == d the terms cancel out completely, so we do not have to compute anything.
         });
 
-    if number_of_numerators > number_of_denominators {
-        res *= numerators
-            .into_iter()
-            .skip(number_of_denominators)
-            .map(factorial)
-            .product::<f64>();
-    } else if number_of_numerators < number_of_denominators {
-        res /= denominators
-            .into_iter()
-            .skip(number_of_numerators)
-            .map(factorial)
-            .product::<f64>();
+    match number_of_numerators.cmp(&number_of_denominators) {
+        Ordering::Greater => {
+            res *= numerators
+                .into_iter()
+                .skip(number_of_denominators)
+                .map(factorial)
+                .product::<f64>()
+        }
+        Ordering::Less => {
+            res /= denominators
+                .into_iter()
+                .skip(number_of_numerators)
+                .map(factorial)
+                .product::<f64>()
+        }
+        // if the lengths are equal we have dealt with all terms in the loop, and have nothing left to do here.
+        Ordering::Equal => (),
     }
-
-    // if the lengths are equal we have dealt with all terms in the loop, and have nothing left
-    // to do here.
 
     res
 }

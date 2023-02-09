@@ -329,7 +329,7 @@ pub fn wigner_d(
 /// Returns the value of the Clebsch-Gordan coefficient for
 /// the given integer inputs.
 /// The first three inputs are the angular momentum quantum numbers,
-/// while the last three are the magnetic quantum numbers.
+/// while the last three are their projections.
 pub fn clebsch_gordan(
     j1: u32,
     j2: u32,

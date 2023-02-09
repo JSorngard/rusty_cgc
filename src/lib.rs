@@ -118,10 +118,10 @@ pub fn wigner_6j(
     }
 
     //The arguments to the factorials should always be positive
-    let fac = delta(j2, j4, j6)
-        * delta(j2, j1, j3)
-        * delta(j6, j5, j1)
-        * delta(j4, j5, j3)
+    let fac = delta(j2, j4, j6)?
+        * delta(j2, j1, j3)?
+        * delta(j6, j5, j1)?
+        * delta(j4, j5, j3)?
         * ratio_of_factorials(
             vec![j2 + j4 + j6 + 1, j4 + j5 + j3 + 1],
             vec![
@@ -162,21 +162,22 @@ fn wigner_9j(
     j7: u32,
     j8: u32,
     j9: u32,
-) -> Result<f64, String> {
+) -> Result<f64, AngularError> {
     //Check that all rows are triads
     if !is_triad(j1, j2, j3) || !is_triad(j4, j5, j6) || !is_triad(j7, j8, j9) {
-        return Err("A row does not fulfill the triangle conditions".to_owned());
+        return Err(AngularError::NotTriangular);
     }
 
     //Check that all columns are triads
     if !is_triad(j1, j4, j7) || !is_triad(j2, j5, j8) || !is_triad(j3, j6, j9) {
-        return Err("A column does not fulfill the triangle conditions".to_owned());
+        return Err(AngularError::NotTriangular);
     }
 
-    let prefactor = phase(j7 + j8 - j9) * nabla(j2, j1, j3) / nabla(j2, j5, j8) * nabla(j4, j5, j6)
-        / nabla(j4, j1, j7)
-        * nabla(j9, j3, j6)
-        / nabla(j9, j7, j8);
+    let prefactor = phase(j7 + j8 - j9) * nabla(j2, j1, j3)? / nabla(j2, j5, j8)?
+        * nabla(j4, j5, j6)?
+        / nabla(j4, j1, j7)?
+        * nabla(j9, j3, j6)?
+        / nabla(j9, j7, j8)?;
 
     let mut sum: f64 = 0.0;
     for x in 0..=(j5 + j8 - j2).min(j7 + j8 - j9) {
@@ -244,17 +245,21 @@ pub fn gaunt(l1: u32, l2: u32, l3: u32, m1: i32, m2: i32, m3: i32) -> Result<f64
 }
 
 /// Returns the value of the triangle coefficient \Delta(abc) used in the computation of 6j and 9j symbols.
-/// The inputs are debug_asserted to be triangular.
-fn delta(a: u32, b: u32, c: u32) -> f64 {
-    debug_assert!(a + c >= b && a + b >= c && b + c >= a);
-    ratio_of_factorials(vec![a + c - b, a + b - c, c + b - a], vec![a + c + b + 1]).sqrt()
+fn delta(a: u32, b: u32, c: u32) -> Result<f64, AngularError> {
+    if a + c >= b && a + b >= c && b + c >= a {
+        Ok(ratio_of_factorials(vec![a + c - b, a + b - c, c + b - a], vec![a + c + b + 1]).sqrt())
+    } else {
+        Err(AngularError::NotTriangular)
+    }
 }
 
 /// Returns the value of the \nabla(abc) triangle coefficient used in the computation of 9j symbols.
-/// The inputs are debug_asserted to be triangular.
-fn nabla(a: u32, b: u32, c: u32) -> f64 {
-    debug_assert!(a + c >= b && a + b >= c && b + c >= a);
-    ratio_of_factorials(vec![a + c - b, a + b - c, a + b + c + 1], vec![b + c - a]).sqrt()
+fn nabla(a: u32, b: u32, c: u32) -> Result<f64, AngularError> {
+    if a + c >= b && a + b >= c && b + c >= a {
+        Ok(ratio_of_factorials(vec![a + c - b, a + b - c, a + b + c + 1], vec![b + c - a]).sqrt())
+    } else {
+        Err(AngularError::NotTriangular)
+    }
 }
 
 #[derive(Debug)]

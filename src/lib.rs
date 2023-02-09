@@ -257,11 +257,26 @@ fn nabla(a: u32, b: u32, c: u32) -> f64 {
     ratio_of_factorials(vec![a + c - b, a + b - c, a + b + c + 1], vec![b + c - a]).sqrt()
 }
 
+#[derive(Debug)]
+pub struct WignerError;
+
+impl std::fmt::Display for WignerError {
+    fn fmt(&self, f: &mut std::fmt::Formatter) -> std::fmt::Result {
+        write!(f, "m-values can not be larger than j")
+    }
+}
+
+impl std::error::Error for WignerError {
+    fn source(&self) -> Option<&(dyn std::error::Error + 'static)> {
+        None
+    }
+}
+
 /// Returns the value of the small Wigner d-matrix in the z-y-z convention.
-pub fn wigner_small_d(j: u32, mp: i32, m: i32, beta: f64) -> Result<f64, String> {
+pub fn wigner_small_d(j: u32, mp: i32, m: i32, beta: f64) -> Result<f64, WignerError> {
     //abs(i32) always fits in a u32.
     if u32::try_from(mp.abs()).unwrap() > j || u32::try_from(m.abs()).unwrap() > j {
-        return Err("m-values can not be larger than j".to_owned());
+        return Err(WignerError {});
     }
 
     let prefactor = f64::sqrt(
@@ -291,7 +306,7 @@ pub fn wigner_d(
     alpha: f64,
     beta: f64,
     gamma: f64,
-) -> Result<Complex<f64>, String> {
+) -> Result<Complex<f64>, WignerError> {
     Ok(
         (wigner_small_d(j, mp, m, beta)? * -1.0 * Complex::<f64>::i() * (mp as f64) * alpha).exp()
             * (-1.0 * Complex::<f64>::i() * (m as f64) * gamma).exp(),

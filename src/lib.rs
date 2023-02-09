@@ -99,6 +99,20 @@ fn reorder3j(
 }
 
 /// Returns the value of the Wigner 6j-symbol.
+/// # Example
+/// ```
+/// # use rusty_cgc::wigner_6j;
+/// use approx::assert_relative_eq;
+/// assert_relative_eq!(wigner_6j(1, 1, 2, 1, 1, 0).unwrap(), 1.0 / 3.0);
+/// 
+/// // As the arguments increase the function becomes less accurate
+/// assert_relative_eq!(
+///     wigner_6j(5, 6, 7, 6, 7, 8).unwrap(),
+///     1327.0 / (92378.0 * f64::sqrt(10.0)),
+///     // Not accurate to within 1e-13
+///     epsilon=1e-12
+/// );
+/// ```
 pub fn wigner_6j(
     j1: u32,
     j2: u32,
@@ -149,7 +163,9 @@ pub fn wigner_6j(
     Ok(sum * fac)
 }
 
-/// Returns the value of the Wigner 9j symbol. Quickly becomes overwhelmed by floating point errors for inputs around 10.
+/// Returns the value of the Wigner 9j symbol.
+/// # Note
+/// Quickly becomes overwhelmed by floating point errors for inputs around 10.
 pub fn wigner_9j(
     j1: u32,
     j2: u32,

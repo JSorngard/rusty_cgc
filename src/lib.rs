@@ -1,8 +1,4 @@
 #[cfg(test)]
-#[macro_use]
-extern crate approx;
-
-#[cfg(test)]
 mod truths;
 
 use num_complex::Complex;
@@ -104,7 +100,7 @@ fn reorder3j(
 /// # use rusty_cgc::wigner_6j;
 /// use approx::assert_relative_eq;
 /// assert_relative_eq!(wigner_6j(1, 1, 2, 1, 1, 0).unwrap(), 1.0 / 3.0);
-/// 
+///
 /// // As the arguments increase the function becomes less accurate
 /// assert_relative_eq!(
 ///     wigner_6j(5, 6, 7, 6, 7, 8).unwrap(),
@@ -575,6 +571,8 @@ pub fn ratio_of_factorials(mut numerators: Vec<u32>, mut denominators: Vec<u32>)
 mod tests {
     use super::*;
     use crate::truths::return_3j_truths;
+    use approx::assert_relative_eq;
+
     use std::f64::consts::PI;
 
     //We allow floating point errors on the scale of TOL.

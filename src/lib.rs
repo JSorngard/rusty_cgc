@@ -35,7 +35,14 @@ use std::f64::consts::PI;
 /// ```
 /// For certain inputs this error can compound during computation.
 /// For all valid 3j symbols with j1 and j2 at most equal to 10, this error is less than 100 * f64::EPSILON.
-pub fn wigner_3j(j1: u32, j2: u32, j3: u32, m1: i32, m2: i32, m3: i32) -> Result<f64, String> {
+pub fn wigner_3j(
+    j1: u32,
+    j2: u32,
+    j3: u32,
+    m1: i32,
+    m2: i32,
+    m3: i32,
+) -> Result<f64, &'static str> {
     if let Some(e) = is_unphysical(j1, j2, j3, m1, m2, -m3) {
         return Err(e);
     };
@@ -94,13 +101,20 @@ fn reorder3j(
 }
 
 /// Returns the value of the Wigner 6j-symbol.
-pub fn wigner_6j(j1: u32, j2: u32, j3: u32, j4: u32, j5: u32, j6: u32) -> Result<f64, String> {
+pub fn wigner_6j(
+    j1: u32,
+    j2: u32,
+    j3: u32,
+    j4: u32,
+    j5: u32,
+    j6: u32,
+) -> Result<f64, &'static str> {
     if !is_triad(j1, j2, j3)
         || !is_triad(j1, j5, j6)
         || !is_triad(j4, j2, j6)
         || !is_triad(j4, j5, j3)
     {
-        return Err("the inputs do not fulfill the required triangle conditions".to_owned());
+        return Err("the inputs do not fulfill the required triangle conditions");
     }
 
     //The arguments to the factorials should always be positive
@@ -209,13 +223,13 @@ fn wigner_9j(
 }
 
 /// Returns the value of the Racah W coefficient.
-pub fn racah_w(j1: u32, j2: u32, j: u32, j3: u32, j12: u32, j23: u32) -> Result<f64, String> {
+pub fn racah_w(j1: u32, j2: u32, j: u32, j3: u32, j12: u32, j23: u32) -> Result<f64, &'static str> {
     Ok(phase(j1 + j2 + j3 + j) * wigner_6j(j1, j2, j12, j3, j, j23)?)
 }
 
 /// Returns the Gaunt coefficient for the input angular momenta.
 /// The Gaunt coefficient is defined as the integral over three spherical harmonics.
-pub fn gaunt(l1: u32, l2: u32, l3: u32, m1: i32, m2: i32, m3: i32) -> Result<f64, String> {
+pub fn gaunt(l1: u32, l2: u32, l3: u32, m1: i32, m2: i32, m3: i32) -> Result<f64, &'static str> {
     if let Some(e) = is_unphysical(l1, l2, l3, m1, m2, -m3) {
         return Err(e);
     };
@@ -288,7 +302,14 @@ pub fn wigner_d(
 /// the given integer inputs.
 /// The first three inputs are the angular momentum quantum numbers,
 /// while the last three are the magnetic quantum numbers.
-pub fn clebsch_gordan(j1: u32, j2: u32, j3: u32, m1: i32, m2: i32, m3: i32) -> Result<f64, String> {
+pub fn clebsch_gordan(
+    j1: u32,
+    j2: u32,
+    j3: u32,
+    m1: i32,
+    m2: i32,
+    m3: i32,
+) -> Result<f64, &'static str> {
     //This code is simply ported Fortran code,
     //as such it is not completely idiomatic rust.
 
@@ -409,13 +430,13 @@ fn phase(x: u32) -> f64 {
 }
 
 /// Returns whether the given quantum numbers represent something unphysical in a CG-coeff or 3j symbol.
-fn is_unphysical(j1: u32, j2: u32, j3: u32, m1: i32, m2: i32, m3: i32) -> Option<String> {
+fn is_unphysical(j1: u32, j2: u32, j3: u32, m1: i32, m2: i32, m3: i32) -> Option<&'static str> {
     if m1.unsigned_abs() > j1 && m2.unsigned_abs() > j2 && m3.unsigned_abs() > j3 {
-        Some("|m| is larger than its corresponding j".to_owned())
+        Some("|m| is larger than its corresponding j")
     } else if !is_triad(j1, j2, j3) {
-        Some("j1, j2, and j3 do not fulfill the triangle condition".to_owned())
+        Some("j1, j2, and j3 do not fulfill the triangle condition")
     } else if m1 + m2 != m3 {
-        Some("m1 + m2 do not equal m3".to_owned())
+        Some("m1 + m2 do not equal m3")
     } else {
         None
     }

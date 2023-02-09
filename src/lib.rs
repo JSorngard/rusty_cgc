@@ -43,9 +43,7 @@ pub fn wigner_3j(
     m2: i32,
     m3: i32,
 ) -> Result<f64, AngularError> {
-    if let Some(e) = is_unphysical(j1, j2, j3, m1, m2, -m3) {
-        return Err(e);
-    };
+    is_unphysical(j1, j2, j3, m1, m2, -m3)?;
 
     let (j1, j2, j3, m1, m2, m3, mut sign) = reorder3j(j1, j2, j3, m1, m2, m3, Sign::Plus);
 
@@ -152,7 +150,7 @@ pub fn wigner_6j(
 }
 
 /// Returns the value of the Wigner 9j symbol. Quickly becomes overwhelmed by floating point errors for inputs around 10.
-fn wigner_9j(
+pub fn wigner_9j(
     j1: u32,
     j2: u32,
     j3: u32,
@@ -231,9 +229,7 @@ pub fn racah_w(j1: u32, j2: u32, j: u32, j3: u32, j12: u32, j23: u32) -> Result<
 /// Returns the Gaunt coefficient for the input angular momenta.
 /// The Gaunt coefficient is defined as the integral over three spherical harmonics.
 pub fn gaunt(l1: u32, l2: u32, l3: u32, m1: i32, m2: i32, m3: i32) -> Result<f64, AngularError> {
-    if let Some(e) = is_unphysical(l1, l2, l3, m1, m2, -m3) {
-        return Err(e);
-    };
+    is_unphysical(l1, l2, l3, m1, m2, -m3)?;
 
     Ok(
         ((2.0 * f64::from(l1) + 1.0) * (2.0 * f64::from(l2) + 1.0) * (2.0 * f64::from(l3) + 1.0)
@@ -333,9 +329,7 @@ pub fn clebsch_gordan(
     //This code is simply ported Fortran code,
     //as such it is not completely idiomatic rust.
 
-    if let Some(e) = is_unphysical(j1, j2, j3, m1, m2, m3) {
-        return Err(e);
-    };
+    is_unphysical(j1, j2, j3, m1, m2, m3)?;
 
     if m1.abs() + m2.abs() == 0 && (j1 + j2 + j3) % 2 == 1 {
         return Ok(0.0);
@@ -425,12 +419,6 @@ fn j_plus_m(j: u32, m: i32) -> u32 {
     }
 }
 
-///Returns whether the given triplet of angular momenta form a triad.
-fn is_float_triad(j1: f32, j2: f32, j3: f32) -> bool {
-    //normal triangle condition                j1 + j2 + j3 must be an integer
-    j3 >= (j1 - j2).abs() && j3 <= j1 + j2 && (j1 + j1 + j3).fract() == 0.0
-}
-
 ///Returns the factorial of the input integer.
 fn factorial(n: u32) -> f64 {
     (2..=n).map(f64::from).product()
@@ -446,15 +434,15 @@ fn phase(x: u32) -> f64 {
 }
 
 /// Returns whether the given quantum numbers represent something unphysical in a CG-coeff or 3j symbol.
-fn is_unphysical(j1: u32, j2: u32, j3: u32, m1: i32, m2: i32, m3: i32) -> Option<AngularError> {
+fn is_unphysical(j1: u32, j2: u32, j3: u32, m1: i32, m2: i32, m3: i32) -> Result<(), AngularError> {
     if m1.unsigned_abs() > j1 && m2.unsigned_abs() > j2 && m3.unsigned_abs() > j3 {
-        Some(AngularError::TooLargeM)
+        Err(AngularError::TooLargeM)
     } else if !is_triad(j1, j2, j3) {
-        Some(AngularError::NotTriangular)
+        Err(AngularError::NotTriangular)
     } else if m1 + m2 != m3 {
-        Some(AngularError::IncorrectMSum)
+        Err(AngularError::IncorrectMSum)
     } else {
-        None
+        Ok(())
     }
 }
 
@@ -793,13 +781,6 @@ impl Sign {
         match self {
             Sign::Plus => Sign::Minus,
             Sign::Minus => Sign::Plus,
-        }
-    }
-
-    fn flip(&mut self) {
-        match self {
-            Sign::Plus => *self = Sign::Minus,
-            Sign::Minus => *self = Sign::Plus,
         }
     }
 }

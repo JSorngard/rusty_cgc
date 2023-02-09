@@ -413,11 +413,7 @@ fn is_float_triad(j1: f32, j2: f32, j3: f32) -> bool {
 
 ///Returns the factorial of the input integer.
 fn factorial(n: u32) -> f64 {
-    if n == 0 {
-        1.0
-    } else {
-        (2..=n).map(f64::from).product()
-    }
+    (2..=n).map(f64::from).product()
 }
 
 /// Returns an f64 with a value of 1.0 if the input is even, and -1.0 if it is odd

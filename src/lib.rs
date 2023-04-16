@@ -131,8 +131,8 @@ pub fn wigner_6j(
         * delta(j6, j5, j1)?
         * delta(j4, j5, j3)?
         * ratio_of_factorials(
-            vec![j2 + j4 + j6 + 1, j4 + j5 + j3 + 1],
-            vec![
+            &mut [j2 + j4 + j6 + 1, j4 + j5 + j3 + 1],
+            &mut [
                 j2 + j4 - j6,
                 j6 + j1 - j5,
                 j6 + j5 - j1,
@@ -145,8 +145,8 @@ pub fn wigner_6j(
     let sum: f64 = (0..=(2 * j4).min(j4 + j6 - j2).min(j4 + j3 - j5))
         .map(|z| {
             ratio_of_factorials(
-                vec![2 * j4 - z, j4 + j6 + j3 - z - j1, j4 + j6 + j1 + j3 + 1 - z],
-                vec![
+                &mut [2 * j4 - z, j4 + j6 + j3 - z - j1, j4 + j6 + j1 + j3 + 1 - z],
+                &mut [
                     z,
                     j4 + j6 - z - j2,
                     j4 + j3 - z - j5,
@@ -201,7 +201,7 @@ pub fn wigner_9j(
                 }
                 sum += phase(x + y + z)
                     * ratio_of_factorials(
-                        vec![
+                        &mut [
                             2 * j8 - x,
                             j2 + j5 + x - j8,
                             j7 + j9 + x - j8,
@@ -211,7 +211,7 @@ pub fn wigner_9j(
                             2 * j1 - z,
                             j4 + j7 + z - j1,
                         ],
-                        vec![
+                        &mut [
                             x,
                             j5 + j8 - x - j2,
                             j7 + j8 - j9 - x,
@@ -255,7 +255,10 @@ pub fn gaunt(l1: u32, l2: u32, l3: u32, m1: i32, m2: i32, m3: i32) -> Result<f64
 /// Returns the value of the triangle coefficient \Delta(abc) used in the computation of 6j and 9j symbols.
 fn delta(a: u32, b: u32, c: u32) -> Result<f64, AngularError> {
     if a + c >= b && a + b >= c && b + c >= a {
-        Ok(ratio_of_factorials(vec![a + c - b, a + b - c, c + b - a], vec![a + c + b + 1]).sqrt())
+        Ok(
+            ratio_of_factorials(&mut [a + c - b, a + b - c, c + b - a], &mut [a + c + b + 1])
+                .sqrt(),
+        )
     } else {
         Err(AngularError::NotTriangular)
     }
@@ -264,7 +267,10 @@ fn delta(a: u32, b: u32, c: u32) -> Result<f64, AngularError> {
 /// Returns the value of the \nabla(abc) triangle coefficient used in the computation of 9j symbols.
 fn nabla(a: u32, b: u32, c: u32) -> Result<f64, AngularError> {
     if a + c >= b && a + b >= c && b + c >= a {
-        Ok(ratio_of_factorials(vec![a + c - b, a + b - c, a + b + c + 1], vec![b + c - a]).sqrt())
+        Ok(
+            ratio_of_factorials(&mut [a + c - b, a + b - c, a + b + c + 1], &mut [b + c - a])
+                .sqrt(),
+        )
     } else {
         Err(AngularError::NotTriangular)
     }
@@ -374,7 +380,7 @@ pub fn clebsch_gordan(
     } - j2; //j1 + ni + 1 - j2 - m3
 
     let mut s1 = phase(ni + j_plus_m(j2, m2))
-        * ratio_of_factorials(vec![ip1, ip2 - 1], vec![ir2, ni, ir3, ir4 - 1]);
+        * ratio_of_factorials(&mut [ip1, ip2 - 1], &mut [ir2, ni, ir3, ir4 - 1]);
 
     let n = nm - ni;
     let mut fa;
@@ -395,8 +401,8 @@ pub fn clebsch_gordan(
 
     let res = (f64::from(2 * j3 + 1)
         * ratio_of_factorials(
-            vec![j3 + j1 - j2, ia1, j1 + j2 - j3, ia2, j_plus_m(j3, -m3)],
-            vec![
+            &mut [j3 + j1 - j2, ia1, j1 + j2 - j3, ia2, j_plus_m(j3, -m3)],
+            &mut [
                 j1 + j2 + j3 + 1,
                 j_plus_m(j1, -m1),
                 j_plus_m(j2, -m2),
@@ -494,11 +500,11 @@ impl std::error::Error for AngularError {
 /// # Example
 /// ```
 /// # use rusty_cgc::ratio_of_factorials;
-/// assert_eq!(ratio_of_factorials(vec![1000000], vec![999999, 8]), 3125.0 / 126.0);
+/// assert_eq!(ratio_of_factorials(&mut [1000000], &mut [999999, 8]), 3125.0 / 126.0);
 /// ```
 /// # Notes
 /// An empty vector is treated as if it contains a single 1.
-pub fn ratio_of_factorials(mut numerators: Vec<u32>, mut denominators: Vec<u32>) -> f64 {
+pub fn ratio_of_factorials(numerators: &mut [u32], denominators: &mut [u32]) -> f64 {
     // In this function we pair up the arguments in the numerator and denominator
     // in order to find pairs of similar values.
 
@@ -548,17 +554,17 @@ pub fn ratio_of_factorials(mut numerators: Vec<u32>, mut denominators: Vec<u32>)
             // Multiply the result by the factorials of the remaining numeratrs.
             // For the example input this results in multiplying the result by 2.
             res * numerators
-                .into_iter()
+                .iter()
                 .skip(number_of_denominators)
-                .map(factorial)
+                .map(|n| factorial(*n))
                 .product::<f64>()
         }
         Ordering::Less => {
             // Divide the result by the factorials of the remaining denominators.
             res / denominators
-                .into_iter()
+                .iter()
                 .skip(number_of_numerators)
-                .map(factorial)
+                .map(|d| factorial(*d))
                 .product::<f64>()
         }
         // if the lengths are equal we have dealt with all terms in the loop, and can just return the result.
@@ -584,17 +590,17 @@ mod tests {
 
     #[test]
     fn test_ratio_of_factorials() {
-        assert_relative_eq!(ratio_of_factorials(vec![5, 2, 7], vec![3, 6]), 280.0);
+        assert_relative_eq!(ratio_of_factorials(&mut [5, 2, 7], &mut [3, 6]), 280.0);
         assert_relative_eq!(
-            ratio_of_factorials(vec![1, 2, 3], vec![0, 5, 8]),
+            ratio_of_factorials(&mut [1, 2, 3], &mut [0, 5, 8]),
             1.0 / 403200.0
         );
-        assert_relative_eq!(ratio_of_factorials(vec![200], vec![197]), 7880400.0);
+        assert_relative_eq!(ratio_of_factorials(&mut [200], &mut [197]), 7880400.0);
         assert_relative_eq!(
-            ratio_of_factorials(vec![1000000], vec![999999, 8]),
+            ratio_of_factorials(&mut [1000000], &mut [999999, 8]),
             3125.0 / 126.0
         );
-        assert_eq!(ratio_of_factorials(vec![], vec![]), 1.0);
+        assert_eq!(ratio_of_factorials(&mut [], &mut []), 1.0);
     }
 
     #[test]

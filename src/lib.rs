@@ -42,7 +42,7 @@ impl From<Sign> for f64 {
     }
 }
 
-macro_rules! impl_from_for_int {
+macro_rules! impl_from_sign_for_int {
     ($($t:ty),+) => {
         $(
             impl From<Sign> for $t {
@@ -56,7 +56,7 @@ macro_rules! impl_from_for_int {
         )+
     };
 }
-impl_from_for_int! {i8, i16, i32, i64, i128}
+impl_from_sign_for_int! {i8, i16, i32, i64, i128}
 
 /// Returns the value of the Wigner 3j symbol for the given integer inputs.
 /// The first three inputs are the angular momentum quantum

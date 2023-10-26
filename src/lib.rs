@@ -574,7 +574,7 @@ pub fn ratio_of_factorials(numerators: &mut [u32], denominators: &mut [u32]) -> 
 }
 
 #[cfg(feature = "big_float")]
-use big::big_ratio_of_factorials;
+pub use big::big_ratio_of_factorials;
 
 #[cfg(feature = "big_float")]
 mod big {

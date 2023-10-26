@@ -353,13 +353,13 @@ pub fn wigner_small_d(j: u32, mp: i32, m: i32, beta: f64) -> Result<f64, WignerE
     );
     let mut sum: f64 = 0.0;
     for s in (m - mp).max(0).unsigned_abs()..=j_plus_m(j, m).min(j_plus_m(j, -mp)) {
-        sum += f64::powf((beta / 2.0).cos(), (j_plus_m(j, m) + j_plus_m(j, -mp) - 2 * s).into())//(2 * j + m - mp)
-            * f64::powf((beta / 2.0).sin(), (2 * s + u32::try_from(mp - m).unwrap()).into())
+        sum += f64::powi((beta / 2.0).cos(), (j_plus_m(j, m) + j_plus_m(j, -mp) - 2 * s) as i32)//(2 * j + m - mp)
+            * f64::powi((beta / 2.0).sin(), 2 * s as i32 + mp - m)
             / (factorial(j_plus_m(j, m) - s)
                 * factorial(s)
-                * factorial(s + u32::try_from(mp - m).unwrap())
+                * factorial((s as i32 + mp - m) as u32)
                 * factorial(j_plus_m(j, -mp) - s))
-            * phase(s + u32::try_from(mp - m).unwrap()); //(-1)^x = (-1)^(-x) if x is real, and a positive i32 always fits in a u32.
+            * phase((s as i32 + mp - m) as u32); //(-1)^x = (-1)^(-x) if x is real, and a positive i32 always fits in a u32.
     }
     Ok(sum * prefactor)
 }
@@ -743,6 +743,10 @@ mod tests {
             );
             assert_relative_eq!(
                 wigner_small_d(2, 2, 0, arg).unwrap(),
+                f64::sqrt(3.0 / 8.0) * arg.sin() * arg.sin()
+            );
+            assert_relative_eq!(
+                wigner_small_d(2, 0, 2, arg).unwrap(),
                 f64::sqrt(3.0 / 8.0) * arg.sin() * arg.sin()
             );
             assert_relative_eq!(

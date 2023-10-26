@@ -539,15 +539,9 @@ impl std::error::Error for AngularError {}
 ///
 /// Can handle large factorials accurately as long as both the numerator and denominator
 /// have factorials of similar size.
-///
-/// # Example
-/// ```
-/// # use rusty_cgc::ratio_of_factorials;
-/// assert_eq!(ratio_of_factorials(&mut [1000000], &mut [999999, 8]), 3125.0 / 126.0);
-/// ```
-/// # Notes
-/// An empty vector is treated as if it contains a single 1.
-pub fn ratio_of_factorials(numerators: &mut [u32], denominators: &mut [u32]) -> f64 {
+/// 
+/// Note that an empty vector is treated as if it contains a single 1.
+fn ratio_of_factorials(numerators: &mut [u32], denominators: &mut [u32]) -> f64 {
     // In this function we pair up the arguments in the numerator and denominator
     // in order to find pairs of similar values.
 

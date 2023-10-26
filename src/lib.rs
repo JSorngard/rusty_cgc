@@ -147,17 +147,18 @@ fn reorder_3j_arguments(
 /// Returns the value of the Wigner 6j-symbol.
 /// # Example
 /// ```
-/// # use rusty_cgc::wigner_6j;
+/// # use rusty_cgc::{wigner_6j, AngularError};
 /// use approx::assert_relative_eq;
-/// assert_relative_eq!(wigner_6j(1, 1, 2, 1, 1, 0).unwrap(), 1.0 / 3.0);
+/// assert_relative_eq!(wigner_6j(1, 1, 2, 1, 1, 0)?, 1.0 / 3.0);
 ///
 /// // As the arguments increase the function becomes less accurate
 /// assert_relative_eq!(
-///     wigner_6j(5, 6, 7, 6, 7, 8).unwrap(),
+///     wigner_6j(5, 6, 7, 6, 7, 8)?,
 ///     1327.0 / (92378.0 * f64::sqrt(10.0)),
 ///     // Not accurate to within 1e-13
 ///     epsilon=1e-12
 /// );
+/// # Ok::<(), AngularError>(())
 /// ```
 pub fn wigner_6j(
     j1: u32,

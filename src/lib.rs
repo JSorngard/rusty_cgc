@@ -796,8 +796,8 @@ enum Sign {
 impl Sign {
     fn flipped(self) -> Self {
         match self {
-            Sign::Plus => Sign::Minus,
-            Sign::Minus => Sign::Plus,
+            Self::Plus => Self::Minus,
+            Self::Minus => Self::Plus,
         }
     }
 }

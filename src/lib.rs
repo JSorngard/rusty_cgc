@@ -800,3 +800,28 @@ impl Sign {
         }
     }
 }
+
+impl From<Sign> for f64 {
+    fn from(s: Sign) -> Self {
+        match s {
+            Sign::Plus => 1.0,
+            Sign::Minus => -1.0,
+        }
+    }
+}
+
+macro_rules! impl_from_for_int {
+    ($($t:ty),+) => {
+        $(
+            impl From<Sign> for $t {
+                fn from(s: Sign) -> Self {
+                    match s {
+                        Sign::Plus => 1,
+                        Sign::Minus => -1,
+                    }
+                }
+            }
+        )+
+    };
+}
+impl_from_for_int! {i8, i16, i32, i64, i128}

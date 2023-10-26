@@ -93,7 +93,7 @@ pub fn wigner_3j(
 ) -> Result<f64, AngularError> {
     is_unphysical(j1, j2, j3, m1, m2, -m3)?;
 
-    let (j1, j2, j3, m1, m2, m3, mut sign) = reorder3j(j1, j2, j3, m1, m2, m3, Sign::Plus);
+    let (j1, j2, j3, m1, m2, m3, mut sign) = reorder_3j_arguments(j1, j2, j3, m1, m2, m3, Sign::Plus);
 
     if (i64::from(j1) - i64::from(j2) - i64::from(m3)) % 2 != 0 {
         sign.flip();
@@ -105,7 +105,7 @@ pub fn wigner_3j(
 }
 
 /// Reorder j1/m1, j2/m2, j3/m3 such that j1 >= j2 >= j3 and m1 >= 0 or m1 == 0 && m2 >= 0
-fn reorder3j(
+fn reorder_3j_arguments(
     j1: u32,
     j2: u32,
     j3: u32,
@@ -120,11 +120,11 @@ fn reorder3j(
     // If we assume that this phase factor is -1, we are only wrong if j1+j2+j3 is even,
     // which we correct for at the end.
     if j1 < j2 {
-        reorder3j(j2, j1, j3, m2, m1, m3, sign.into_flipped())
+        reorder_3j_arguments(j2, j1, j3, m2, m1, m3, sign.into_flipped())
     } else if j2 < j3 {
-        reorder3j(j1, j3, j2, m1, m3, m2, sign.into_flipped())
+        reorder_3j_arguments(j1, j3, j2, m1, m3, m2, sign.into_flipped())
     } else if m1 < 0 || (m1 == 0 && m2 < 0) {
-        reorder3j(j1, j2, j3, -m1, -m2, -m3, sign.into_flipped())
+        reorder_3j_arguments(j1, j2, j3, -m1, -m2, -m3, sign.into_flipped())
     } else {
         (
             j1,

@@ -554,7 +554,7 @@ pub fn ratio_of_factorials(numerators: &mut [u32], denominators: &mut [u32]) -> 
             // Multiply the result by the factorials of the remaining numeratrs.
             // For the example input this results in multiplying the result by 2.
             res * numerators
-                .iter()
+                .into_iter()
                 .skip(number_of_denominators)
                 .map(|n| factorial(*n))
                 .product::<f64>()
@@ -562,7 +562,7 @@ pub fn ratio_of_factorials(numerators: &mut [u32], denominators: &mut [u32]) -> 
         Ordering::Less => {
             // Divide the result by the factorials of the remaining denominators.
             res / denominators
-                .iter()
+                .into_iter()
                 .skip(number_of_numerators)
                 .map(|d| factorial(*d))
                 .product::<f64>()
@@ -573,68 +573,74 @@ pub fn ratio_of_factorials(numerators: &mut [u32], denominators: &mut [u32]) -> 
     // After this the result is 5/18 * 2 = 5/9 = 0.555555...
 }
 
-type FBig = dashu_float::FBig;
-fn big_ratio_of_factorials(numerators: &mut [u32], denominators: &mut [u32]) -> f64 {
-    let number_of_numerators = numerators.len();
-    let number_of_denominators = denominators.len();
+#[cfg(feature = "big_float")]
+use big::big_ratio_of_factorials;
 
-    if number_of_numerators > 1 {
-        numerators.sort_unstable();
-        numerators.reverse();
-    }
+#[cfg(feature = "big_float")]
+mod big {
+    use dashu_float::FBig;
+    pub fn big_ratio_of_factorials(numerators: &mut [u32], denominators: &mut [u32]) -> f64 {
+        let number_of_numerators = numerators.len();
+        let number_of_denominators = denominators.len();
 
-    if number_of_denominators > 1 {
-        denominators.sort_unstable();
-        denominators.reverse();
-    }
+        if number_of_numerators > 1 {
+            numerators.sort_unstable();
+            numerators.reverse();
+        }
 
-    if numerators == denominators {
-        return 1.0;
-    }
+        if number_of_denominators > 1 {
+            denominators.sort_unstable();
+            denominators.reverse();
+        }
 
-    let res = numerators
-        .iter()
-        .zip(denominators.iter())
-        .fold(FBig::ONE, |res, (n, d)| match n.cmp(d) {
+        if numerators == denominators {
+            return 1.0;
+        }
+
+        let res = numerators
+            .iter()
+            .zip(denominators.iter())
+            .fold(FBig::ONE, |res, (n, d)| match n.cmp(d) {
+                Ordering::Greater => {
+                    res * (d + 1..n + 1)
+                        .map(|x| FBig::try_from(x).unwrap())
+                        .product::<FBig>()
+                }
+                Ordering::Less => {
+                    res / (n + 1..d + 1)
+                        .map(|x| FBig::try_from(x).unwrap())
+                        .product::<FBig>()
+                }
+                Ordering::Equal => res,
+            });
+
+        match number_of_numerators.cmp(&number_of_denominators) {
             Ordering::Greater => {
-                res * (d + 1..n + 1)
-                    .map(|x| FBig::try_from(x).unwrap())
+                res * numerators
+                    .iter()
+                    .skip(number_of_denominators)
+                    .copied()
+                    .map(big_factorial)
                     .product::<FBig>()
             }
             Ordering::Less => {
-                res / (n + 1..d + 1)
-                    .map(|x| FBig::try_from(x).unwrap())
+                res / denominators
+                    .iter()
+                    .skip(number_of_numerators)
+                    .copied()
+                    .map(big_factorial)
                     .product::<FBig>()
             }
             Ordering::Equal => res,
-        });
-
-    match number_of_numerators.cmp(&number_of_denominators) {
-        Ordering::Greater => {
-            res * numerators
-                .iter()
-                .skip(number_of_denominators)
-                .copied()
-                .map(big_factorial)
-                .product::<FBig>()
         }
-        Ordering::Less => {
-            res / denominators
-                .iter()
-                .skip(number_of_numerators)
-                .copied()
-                .map(big_factorial)
-                .product::<FBig>()
-        }
-        Ordering::Equal => res,
+        .to_f64()
+        .value()
     }
-    .to_f64()
-    .value()
-}
 
-///Returns the factorial of the input integer as an arbitrary precision float.
-fn big_factorial(n: u32) -> FBig {
-    (2..=n).map(|i| FBig::try_from(i).unwrap()).product()
+    ///Returns the factorial of the input integer as an arbitrary precision float.
+    fn big_factorial(n: u32) -> FBig {
+        (2..=n).map(|i| FBig::try_from(i).unwrap()).product()
+    }
 }
 
 #[cfg(test)]
@@ -667,6 +673,7 @@ mod tests {
         assert_eq!(ratio_of_factorials(&mut [], &mut []), 1.0);
     }
 
+    #[cfg(feature = "big_float")]
     #[test]
     fn test_big_ratio_of_factorials() {
         assert_eq!(big_ratio_of_factorials(&mut [5, 2, 7], &mut [3, 6]), 280.0)

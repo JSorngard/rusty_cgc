@@ -14,4 +14,4 @@ num-complex = "0.4.3"
 approx = "0.5.1"
 
 [features]
-big = ["dep:dashu-float"]
+big_float = ["dep:dashu-float"]

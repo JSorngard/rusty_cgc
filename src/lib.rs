@@ -24,6 +24,13 @@ impl Sign {
             Self::Minus => Self::Plus,
         }
     }
+
+    fn flip(&mut self) {
+        *self = match self {
+            Self::Plus => Self::Minus,
+            Self::Minus => Self::Plus,
+        };
+    }
 }
 
 impl From<Sign> for f64 {
@@ -89,7 +96,7 @@ pub fn wigner_3j(
     let (j1, j2, j3, m1, m2, m3, mut sign) = reorder3j(j1, j2, j3, m1, m2, m3, Sign::Plus);
 
     if (i64::from(j1) - i64::from(j2) - i64::from(m3)) % 2 != 0 {
-        sign = sign.flipped();
+        sign.flip();
     }
 
     let cg = clebsch_gordan(j1, j2, j3, m1, m2, -m3)?;

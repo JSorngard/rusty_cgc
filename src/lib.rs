@@ -11,6 +11,45 @@ use std::f64::consts::PI;
 #[cfg(feature = "big_float")]
 pub use big_float::big_ratio_of_factorials;
 
+enum Sign {
+    Plus,
+    Minus,
+}
+
+impl Sign {
+    fn flipped(self) -> Self {
+        match self {
+            Self::Plus => Self::Minus,
+            Self::Minus => Self::Plus,
+        }
+    }
+}
+
+impl From<Sign> for f64 {
+    fn from(s: Sign) -> Self {
+        match s {
+            Sign::Plus => 1.0,
+            Sign::Minus => -1.0,
+        }
+    }
+}
+
+macro_rules! impl_from_for_int {
+    ($($t:ty),+) => {
+        $(
+            impl From<Sign> for $t {
+                fn from(s: Sign) -> Self {
+                    match s {
+                        Sign::Plus => 1,
+                        Sign::Minus => -1,
+                    }
+                }
+            }
+        )+
+    };
+}
+impl_from_for_int! {i8, i16, i32, i64, i128}
+
 /// Returns the value of the Wigner 3j symbol for the given integer inputs.
 /// The first three inputs are the angular momentum quantum
 /// numbers, while the last three are the magnetic quantum numbers.
@@ -786,42 +825,3 @@ mod tests {
         );
     }
 }
-
-enum Sign {
-    Plus,
-    Minus,
-}
-
-impl Sign {
-    fn flipped(self) -> Self {
-        match self {
-            Self::Plus => Self::Minus,
-            Self::Minus => Self::Plus,
-        }
-    }
-}
-
-impl From<Sign> for f64 {
-    fn from(s: Sign) -> Self {
-        match s {
-            Sign::Plus => 1.0,
-            Sign::Minus => -1.0,
-        }
-    }
-}
-
-macro_rules! impl_from_for_int {
-    ($($t:ty),+) => {
-        $(
-            impl From<Sign> for $t {
-                fn from(s: Sign) -> Self {
-                    match s {
-                        Sign::Plus => 1,
-                        Sign::Minus => -1,
-                    }
-                }
-            }
-        )+
-    };
-}
-impl_from_for_int! {i8, i16, i32, i64, i128}

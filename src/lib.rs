@@ -81,8 +81,8 @@ impl_from_for_int! {i8, i16, i32, i64, i128}
 /// assert_relative_eq!(wigner_3j(10, 10, 10, 8, 2, -10)?, 2.0 * f64::sqrt(561.0 / 723695.0));
 /// # Ok::<(), AngularError>(())
 /// ```
-/// For certain inputs this error can compound during computation.
-/// For all valid 3j symbols with j1 and j2 at most equal to 10, this error is less than 100 * f64::EPSILON.
+/// For larger inputs this error grows,
+/// but for all valid 3j symbols with j1 and j2 at most equal to 10, this error is less than 100 * f64::EPSILON.
 pub fn wigner_3j(
     j1: u32,
     j2: u32,

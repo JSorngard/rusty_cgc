@@ -64,22 +64,22 @@ impl_from_for_int! {i8, i16, i32, i64, i128}
 /// # Example
 /// Basic usage
 /// ```
-/// # use rusty_cgc::wigner_3j;
-/// assert_eq!(wigner_3j(1, 1, 1, 1, -1, 0).unwrap(), 1.0/f64::sqrt(6.0));
+/// # use rusty_cgc::{AngularError, wigner_3j};
+/// assert_eq!(wigner_3j(1, 1, 1, 1, -1, 0)?, 1.0/f64::sqrt(6.0));
+/// # Ok::<(), AngularError>(())
 /// ```
 /// There can be floating point errors for larger inputs, so the following assertion will panic:
 /// ```should_panic
-/// # use rusty_cgc::wigner_3j;
-/// assert_eq!(wigner_3j(10, 10, 10, 8, 2, -10).unwrap(), 2.0*f64::sqrt(561.0/723695.0));
+/// # use rusty_cgc::{AngularError, wigner_3j};
+/// assert_eq!(wigner_3j(10, 10, 10, 8, 2, -10)?, 2.0 * f64::sqrt(561.0 / 723695.0));
+/// # Ok::<(), AngularError>(())
 /// ```
 /// If we use float apropriate comparison instead the assert succeeds:
 /// ```
-/// #[macro_use]
-/// extern crate approx;
-/// # use rusty_cgc::wigner_3j;
-/// # fn main() {
-/// assert_relative_eq!(wigner_3j(10, 10, 10, 8, 2, -10).unwrap(), 2.0*f64::sqrt(561.0/723695.0));
-/// # }
+/// use approx::assert_relative_eq;
+/// # use rusty_cgc::{AngularError, wigner_3j};
+/// assert_relative_eq!(wigner_3j(10, 10, 10, 8, 2, -10)?, 2.0 * f64::sqrt(561.0 / 723695.0));
+/// # Ok::<(), AngularError>(())
 /// ```
 /// For certain inputs this error can compound during computation.
 /// For all valid 3j symbols with j1 and j2 at most equal to 10, this error is less than 100 * f64::EPSILON.
@@ -290,7 +290,8 @@ pub fn racah_w(j1: u32, j2: u32, j: u32, j3: u32, j12: u32, j23: u32) -> Result<
 }
 
 /// Returns the Gaunt coefficient for the input angular momenta.
-/// The Gaunt coefficient is defined as the integral over three spherical harmonics.
+/// The Gaunt coefficient is defined as the integral over three spherical harmonics:  
+/// Y(l1, m1, θ, φ) * Y(l2, m2, θ, φ) * Y(l3, m3, θ, φ)
 pub fn gaunt(l1: u32, l2: u32, l3: u32, m1: i32, m2: i32, m3: i32) -> Result<f64, AngularError> {
     is_unphysical(l1, l2, l3, m1, m2, -m3)?;
 

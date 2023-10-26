@@ -18,7 +18,7 @@ enum Sign {
 }
 
 impl Sign {
-    fn flipped(self) -> Self {
+    fn into_flipped(self) -> Self {
         match self {
             Self::Plus => Self::Minus,
             Self::Minus => Self::Plus,
@@ -120,11 +120,11 @@ fn reorder3j(
     //If we assume that this phase factor is -1, we are only wrong if j1+j2+j3 is even,
     //which we correct for at the end.
     if j1 < j2 {
-        reorder3j(j2, j1, j3, m2, m1, m3, sign.flipped())
+        reorder3j(j2, j1, j3, m2, m1, m3, sign.into_flipped())
     } else if j2 < j3 {
-        reorder3j(j1, j3, j2, m1, m3, m2, sign.flipped())
+        reorder3j(j1, j3, j2, m1, m3, m2, sign.into_flipped())
     } else if m1 < 0 || (m1 == 0 && m2 < 0) {
-        reorder3j(j1, j2, j3, -m1, -m2, -m3, sign.flipped())
+        reorder3j(j1, j2, j3, -m1, -m2, -m3, sign.into_flipped())
     } else {
         (
             j1,

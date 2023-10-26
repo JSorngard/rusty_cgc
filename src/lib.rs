@@ -93,7 +93,8 @@ pub fn wigner_3j(
 ) -> Result<f64, AngularError> {
     is_unphysical(j1, j2, j3, m1, m2, -m3)?;
 
-    let (j1, j2, j3, m1, m2, m3, mut sign) = reorder_3j_arguments(j1, j2, j3, m1, m2, m3, Sign::Plus);
+    let (j1, j2, j3, m1, m2, m3, mut sign) =
+        reorder_3j_arguments(j1, j2, j3, m1, m2, m3, Sign::Plus);
 
     if (i64::from(j1) - i64::from(j2) - i64::from(m3)) % 2 != 0 {
         sign.flip();

@@ -7,7 +7,7 @@ authors = ["Johanna Sörngård (jsorngard@gmail.com)"]
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
 [dependencies]
-num-complex = "0.4.3"
+num-complex = "0.4.4"
 
 [dev-dependencies]
 approx = "0.5.1"

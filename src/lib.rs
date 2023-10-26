@@ -294,8 +294,8 @@ impl std::error::Error for WignerError {}
 
 /// Returns the value of the small Wigner d-matrix in the z-y-z convention.
 pub fn wigner_small_d(j: u32, mp: i32, m: i32, beta: f64) -> Result<f64, WignerError> {
-    //abs(i32) always fits in a u32.
-    if u32::try_from(mp.abs()).unwrap() > j || u32::try_from(m.abs()).unwrap() > j {
+    // The absolute value of an i32 fits in a u32, so the as cast always works
+    if i64::from(mp).abs() as u32 > j || i64::from(mp).abs() as u32 > j {
         return Err(WignerError {});
     }
 

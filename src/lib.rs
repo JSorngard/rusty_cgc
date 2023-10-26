@@ -294,8 +294,7 @@ impl std::error::Error for WignerError {}
 
 /// Returns the value of the small Wigner d-matrix in the z-y-z convention.
 pub fn wigner_small_d(j: u32, mp: i32, m: i32, beta: f64) -> Result<f64, WignerError> {
-    // The absolute value of an i32 fits in a u32, so the as cast always works
-    if i64::from(mp).abs() as u32 > j || i64::from(mp).abs() as u32 > j {
+    if mp.unsigned_abs() > j || m.unsigned_abs() > j {
         return Err(WignerError {});
     }
 
@@ -350,7 +349,7 @@ pub fn clebsch_gordan(
 
     is_unphysical(j1, j2, j3, m1, m2, m3)?;
 
-    if m1.abs() + m2.abs() == 0 && (j1 + j2 + j3) % 2 == 1 {
+    if m1.unsigned_abs() + m2.unsigned_abs() == 0 && (j1 + j2 + j3) % 2 == 1 {
         return Ok(0.0);
     }
 
@@ -430,11 +429,11 @@ fn is_triad(j1: u32, j2: u32, j3: u32) -> bool {
 /// Returns the result of adding an angular momentum to its projection.
 /// Debug_asserts that |m| <= j.
 fn j_plus_m(j: u32, m: i32) -> u32 {
-    debug_assert!(u32::try_from(m.abs()).unwrap() <= j);
+    debug_assert!(m.unsigned_abs() <= j);
     if m >= 0 {
-        j + u32::try_from(m).unwrap()
+        j + m.unsigned_abs()
     } else {
-        j - u32::try_from(-m).unwrap()
+        j - m.unsigned_abs()
     }
 }
 
@@ -660,10 +659,10 @@ mod tests {
 
         for j1 in 0..=MAXJ {
             for j2 in 0..=MAXJ {
-                for j3 in ((j1 as i32) - (j2 as i32)).abs() as u32..=j1 + j2 {
+                for j3 in ((j1 as i32) - (j2 as i32)).unsigned_abs()..=j1 + j2 {
                     for m1 in -(j1 as i32)..=j1 as i32 {
                         for m2 in -(j2 as i32)..=j2 as i32 {
-                            if (m1 + m2).abs() as u32 > j3 {
+                            if (m1 + m2).unsigned_abs() > j3 {
                                 continue;
                             }
 

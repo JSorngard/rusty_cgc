@@ -114,11 +114,11 @@ fn reorder3j(
     m3: i32,
     sign: Sign,
 ) -> (u32, u32, u32, i32, i32, i32, Sign) {
-    //An odd permutation of the columns or a
-    //sign change of the m-quantum values (time reversal)
-    //give a phase factor of (-1)^(j1+j2+j3).
-    //If we assume that this phase factor is -1, we are only wrong if j1+j2+j3 is even,
-    //which we correct for at the end.
+    // An odd permutation of the columns or a
+    // sign change of the m-quantum values (time reversal)
+    // give a phase factor of (-1)^(j1+j2+j3).
+    // If we assume that this phase factor is -1, we are only wrong if j1+j2+j3 is even,
+    // which we correct for at the end.
     if j1 < j2 {
         reorder3j(j2, j1, j3, m2, m1, m3, sign.into_flipped())
     } else if j2 < j3 {
@@ -132,8 +132,9 @@ fn reorder3j(
             j3,
             m1,
             m2,
-            m3, //Sign doesn't matter if total J = j1 + j2 + j3 is even
+            m3,
             if (j1 + j2 + j3) % 2 == 0 {
+                // Sign doesn't matter if total J = j1 + j2 + j3 is even
                 Sign::Plus
             } else {
                 sign

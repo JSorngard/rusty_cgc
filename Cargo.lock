@@ -18,44 +18,6 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "d468802bab17cbc0cc575e9b053f41e72aa36bfa6b7f55e3529ffa43161b97fa"
 
 [[package]]
-name = "cfg-if"
-version = "1.0.0"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "baf1de4339761588bc0619e3cbc0120ee582ebb74b53b4efbf79117bd2da40fd"
-
-[[package]]
-name = "dashu-base"
-version = "0.3.1"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "6f2585452b8ecf7c874045dba02a7914b7e5b2e3cdd5e152573413aa290197aa"
-
-[[package]]
-name = "dashu-float"
-version = "0.3.2"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "7a168f338914fab603c31a371207c8b3245ab5ff5e9a0f4fd64a9b5f8a972d1f"
-dependencies = [
- "dashu-base",
- "dashu-int",
- "num-traits",
- "rand",
- "static_assertions",
-]
-
-[[package]]
-name = "dashu-int"
-version = "0.3.1"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "57a1009a3ce0c4c64e977c5e7dd8c475278750e145cbb8956d1e28832f557975"
-dependencies = [
- "cfg-if",
- "dashu-base",
- "num-traits",
- "rand",
- "static_assertions",
-]
-
-[[package]]
 name = "num-complex"
 version = "0.4.3"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -74,31 +36,9 @@ dependencies = [
 ]
 
 [[package]]
-name = "rand"
-version = "0.8.5"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "34af8d1a0e25924bc5b7c43c079c942339d8f0a8b57c39049bef581b46327404"
-dependencies = [
- "rand_core",
-]
-
-[[package]]
-name = "rand_core"
-version = "0.6.4"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "ec0be4795e2f6a28069bec0b5ff3e2ac9bafc99e6a9a7dc3547996c5c816922c"
-
-[[package]]
 name = "rusty-cgc"
 version = "0.1.0"
 dependencies = [
  "approx",
- "dashu-float",
  "num-complex",
 ]
-
-[[package]]
-name = "static_assertions"
-version = "1.1.0"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "a2eb9349b6444b326872e140eb1cf5e7c522154d69e7a0ffb0fb81c06b37543f"

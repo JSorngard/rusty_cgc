@@ -1,5 +1,3 @@
-#[cfg(feature = "big_float")]
-mod big_float;
 #[cfg(test)]
 mod truths;
 
@@ -7,9 +5,6 @@ use num_complex::Complex;
 
 use std::cmp::Ordering;
 use std::f64::consts::PI;
-
-#[cfg(feature = "big_float")]
-pub use big_float::big_ratio_of_factorials;
 
 #[derive(Debug, Copy, Clone, PartialEq, Eq)]
 enum Sign {

@@ -11,6 +11,7 @@ use std::f64::consts::PI;
 #[cfg(feature = "big_float")]
 pub use big_float::big_ratio_of_factorials;
 
+#[derive(Debug, Copy, Clone, PartialEq, Eq)]
 enum Sign {
     Plus,
     Minus,
@@ -93,11 +94,7 @@ pub fn wigner_3j(
 
     let cg = clebsch_gordan(j1, j2, j3, m1, m2, -m3)?;
 
-    Ok(match sign {
-        Sign::Plus => 1.0,
-        Sign::Minus => -1.0,
-    } * cg
-        / (2.0 * f64::from(j3) + 1.0).sqrt())
+    Ok(f64::from(sign) * cg / (2.0 * f64::from(j3) + 1.0).sqrt())
 }
 
 /// Reorder j1/m1, j2/m2, j3/m3 such that j1 >= j2 >= j3 and m1 >= 0 or m1 == 0 && m2 >= 0

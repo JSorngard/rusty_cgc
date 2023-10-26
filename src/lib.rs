@@ -374,8 +374,8 @@ pub fn wigner_d(
     gamma: f64,
 ) -> Result<Complex<f64>, WignerError> {
     Ok(
-        (wigner_small_d(j, mp, m, beta)? * -1.0 * Complex::<f64>::i() * (mp as f64) * alpha).exp()
-            * (-1.0 * Complex::<f64>::i() * (m as f64) * gamma).exp(),
+        (wigner_small_d(j, mp, m, beta)? * -1.0 * Complex::<f64>::i() * f64::from(mp) * alpha).exp()
+            * (-1.0 * Complex::<f64>::i() * f64::from(m) * gamma).exp(),
     )
 }
 

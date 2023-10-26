@@ -352,7 +352,7 @@ pub fn wigner_small_d(j: u32, mp: i32, m: i32, beta: f64) -> Result<f64, WignerE
             * factorial(j_plus_m(j, -m)),
     );
     let mut sum: f64 = 0.0;
-    for s in (i32::max(0, m - mp) as u32)..=u32::min(j_plus_m(j, m), j_plus_m(j, -mp)) {
+    for s in (m - mp).max(0).unsigned_abs()..=j_plus_m(j, m).min(j_plus_m(j, -mp)) {
         sum += f64::powf((beta / 2.0).cos(), (j_plus_m(j, m) + j_plus_m(j, -mp) - 2 * s).into())//(2 * j + m - mp)
             * f64::powf((beta / 2.0).sin(), (2 * s + u32::try_from(mp - m).unwrap()).into())
             / (factorial(j_plus_m(j, m) - s)
@@ -374,7 +374,8 @@ pub fn wigner_d(
     gamma: f64,
 ) -> Result<Complex<f64>, WignerError> {
     Ok(
-        (wigner_small_d(j, mp, m, beta)? * -1.0 * Complex::<f64>::i() * f64::from(mp) * alpha).exp()
+        (wigner_small_d(j, mp, m, beta)? * -1.0 * Complex::<f64>::i() * f64::from(mp) * alpha)
+            .exp()
             * (-1.0 * Complex::<f64>::i() * f64::from(m) * gamma).exp(),
     )
 }
@@ -539,7 +540,7 @@ impl std::error::Error for AngularError {}
 ///
 /// Can handle large factorials accurately as long as both the numerator and denominator
 /// have factorials of similar size.
-/// 
+///
 /// Note that an empty vector is treated as if it contains a single 1.
 fn ratio_of_factorials(numerators: &mut [u32], denominators: &mut [u32]) -> f64 {
     // In this function we pair up the arguments in the numerator and denominator

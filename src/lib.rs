@@ -531,27 +531,26 @@ fn ratio_of_factorials(numerators: &mut [u32], denominators: &mut [u32]) -> f64 
     let number_of_denominators = denominators.len();
 
     // We begin by ordering the terms in descending order
-    // so the input [5, 2, 7], [3, 9] becomes [7, 5, 2], [9, 3]
+    // so the input [5, 2, 7], [3, 9] becomes [2, 5, 7], [3, 9]
 
     if number_of_numerators > 1 {
         numerators.sort_unstable();
-        numerators.reverse();
     }
 
     if number_of_denominators > 1 {
         denominators.sort_unstable();
-        denominators.reverse();
     }
 
     if numerators == denominators {
         return 1.0;
     }
 
-    // Split into (numerator, denominator) pairs.
-    // So [7, 5, 2], [9, 3] becomes the pairs (7, 9) and (5, 3).
+    // Split into the largest (numerator, denominator) pairs.
+    // So [2, 5, 7], [3, 9] becomes the pairs (7, 9) and (5, 3).
     let res = numerators
         .iter()
-        .zip(denominators.iter())
+        .rev()
+        .zip(denominators.iter().rev())
         .fold(1.0, |res, (n, d)| {
             match n.cmp(d) {
                 // n > d => multiply by all the terms in n! that are not cancelled by dividing by d!.
@@ -574,6 +573,7 @@ fn ratio_of_factorials(numerators: &mut [u32], denominators: &mut [u32]) -> f64 
             // For the example input this results in multiplying the result by 2.
             res * numerators
                 .iter()
+                .rev()
                 .skip(number_of_denominators)
                 .map(|n| factorial(*n))
                 .product::<f64>()
@@ -582,6 +582,7 @@ fn ratio_of_factorials(numerators: &mut [u32], denominators: &mut [u32]) -> f64 
             // Divide the result by the factorials of the remaining denominators.
             res / denominators
                 .iter()
+                .rev()
                 .skip(number_of_numerators)
                 .map(|d| factorial(*d))
                 .product::<f64>()

@@ -309,7 +309,7 @@ fn nabla(a: u32, b: u32, c: u32) -> Result<f64, Error> {
     }
 }
 
-#[derive(Debug)]
+#[derive(Debug, Copy, Clone)]
 pub struct WignerError;
 
 impl std::fmt::Display for WignerError {

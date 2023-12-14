@@ -507,7 +507,7 @@ impl std::fmt::Display for Error {
 
 impl std::error::Error for Error {}
 
-/// Takes in two lists of integers representing a ratio of two sets of factorials
+/// Takes in two lists of integers that represent a ratio of two sets of factorials
 /// and returns the value of that ratio as an `f64`.
 /// E.g. an input of [5, 2, 7] and [3, 9] represents the equation (5!*2!*7!)/(3!*9!)
 /// and would give a value of 5/9 = 0.5555...

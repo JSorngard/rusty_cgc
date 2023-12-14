@@ -563,7 +563,7 @@ fn ratio_of_factorials(numerators: &mut [u32], denominators: &mut [u32]) -> f64 
     // The example input has an unpaired 2 in the numerator.
     match number_of_numerators.cmp(&number_of_denominators) {
         Ordering::Greater => {
-            // Multiply the result by the factorials of the remaining numeratrs.
+            // Multiply the result by the factorials of the remaining numerators.
             // For the example input this results in multiplying the result by 2.
             res * numerators
                 .iter()

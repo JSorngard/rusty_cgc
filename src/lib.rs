@@ -459,7 +459,7 @@ fn j_plus_m(j: u32, m: i32) -> u32 {
     }
 }
 
-///Returns the factorial of the input integer.
+/// Returns the factorial of the input integer.
 fn factorial(n: u32) -> f64 {
     (2..=n).map(f64::from).product()
 }

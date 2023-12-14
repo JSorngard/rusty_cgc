@@ -59,26 +59,26 @@ impl_from_sign_for_int! {i8, i16, i32, i64, i128}
 /// # Example
 /// Basic usage
 /// ```
-/// # use rusty_cgc::{Error, wigner_3j};
+/// # use rusty_cgc::{AngMomError, wigner_3j};
 /// assert_eq!(wigner_3j(1, 1, 1, 1, -1, 0)?, 1.0/f64::sqrt(6.0));
-/// # Ok::<(), Error>(())
+/// # Ok::<(), AngMomError>(())
 /// ```
 /// There can be floating point errors for larger inputs, so the following assertion will panic:
 /// ```should_panic
-/// # use rusty_cgc::{Error, wigner_3j};
+/// # use rusty_cgc::{AngMomError, wigner_3j};
 /// assert_eq!(wigner_3j(10, 10, 10, 8, 2, -10)?, 2.0 * f64::sqrt(561.0 / 723695.0));
-/// # Ok::<(), Error>(())
+/// # Ok::<(), AngMomError>(())
 /// ```
 /// If we use float apropriate comparison instead the assert succeeds:
 /// ```
 /// use approx::assert_relative_eq;
-/// # use rusty_cgc::{Error, wigner_3j};
+/// # use rusty_cgc::{AngMomError, wigner_3j};
 /// assert_relative_eq!(wigner_3j(10, 10, 10, 8, 2, -10)?, 2.0 * f64::sqrt(561.0 / 723695.0));
-/// # Ok::<(), Error>(())
+/// # Ok::<(), AngMomError>(())
 /// ```
 /// For larger inputs this error grows,
 /// but for all valid 3j symbols with j1 and j2 at most equal to 10, this error is less than 100 * f64::EPSILON.
-pub fn wigner_3j(j1: u32, j2: u32, j3: u32, m1: i32, m2: i32, m3: i32) -> Result<f64, Error> {
+pub fn wigner_3j(j1: u32, j2: u32, j3: u32, m1: i32, m2: i32, m3: i32) -> Result<f64, AngMomError> {
     is_unphysical(j1, j2, j3, m1, m2, -m3)?;
 
     let (j1, j2, j3, m1, m2, m3, mut sign) =
@@ -135,7 +135,7 @@ fn reorder_3j_arguments(
 /// Returns the value of the Wigner 6j-symbol.
 /// # Example
 /// ```
-/// # use rusty_cgc::{wigner_6j, Error};
+/// # use rusty_cgc::{wigner_6j, AngMomError};
 /// use approx::assert_relative_eq;
 /// assert_relative_eq!(wigner_6j(1, 1, 2, 1, 1, 0)?, 1.0 / 3.0);
 ///
@@ -146,15 +146,15 @@ fn reorder_3j_arguments(
 ///     // Not accurate to within 1e-13
 ///     epsilon=1e-12
 /// );
-/// # Ok::<(), Error>(())
+/// # Ok::<(), AngMomError>(())
 /// ```
-pub fn wigner_6j(j1: u32, j2: u32, j3: u32, j4: u32, j5: u32, j6: u32) -> Result<f64, Error> {
+pub fn wigner_6j(j1: u32, j2: u32, j3: u32, j4: u32, j5: u32, j6: u32) -> Result<f64, AngMomError> {
     if !is_triad(j1, j2, j3)
         || !is_triad(j1, j5, j6)
         || !is_triad(j4, j2, j6)
         || !is_triad(j4, j5, j3)
     {
-        return Err(Error::NotTriangular);
+        return Err(AngMomError::NotTriangular);
     }
 
     //The arguments to the factorials should always be positive
@@ -204,15 +204,15 @@ pub fn wigner_9j(
     j7: u32,
     j8: u32,
     j9: u32,
-) -> Result<f64, Error> {
+) -> Result<f64, AngMomError> {
     //Check that all rows are triads
     if !is_triad(j1, j2, j3) || !is_triad(j4, j5, j6) || !is_triad(j7, j8, j9) {
-        return Err(Error::NotTriangular);
+        return Err(AngMomError::NotTriangular);
     }
 
     //Check that all columns are triads
     if !is_triad(j1, j4, j7) || !is_triad(j2, j5, j8) || !is_triad(j3, j6, j9) {
-        return Err(Error::NotTriangular);
+        return Err(AngMomError::NotTriangular);
     }
 
     let prefactor = phase(j7 + j8 - j9) * nabla(j2, j1, j3)? / nabla(j2, j5, j8)?
@@ -266,14 +266,14 @@ pub fn wigner_9j(
 }
 
 /// Returns the value of the Racah W coefficient.
-pub fn racah_w(j1: u32, j2: u32, j: u32, j3: u32, j12: u32, j23: u32) -> Result<f64, Error> {
+pub fn racah_w(j1: u32, j2: u32, j: u32, j3: u32, j12: u32, j23: u32) -> Result<f64, AngMomError> {
     Ok(phase(j1 + j2 + j3 + j) * wigner_6j(j1, j2, j12, j3, j, j23)?)
 }
 
 /// Returns the Gaunt coefficient for the input angular momenta.
 /// The Gaunt coefficient is defined as the integral over three spherical harmonics:  
 /// Y(l1, m1, θ, φ) * Y(l2, m2, θ, φ) * Y(l3, m3, θ, φ)
-pub fn gaunt(l1: u32, l2: u32, l3: u32, m1: i32, m2: i32, m3: i32) -> Result<f64, Error> {
+pub fn gaunt(l1: u32, l2: u32, l3: u32, m1: i32, m2: i32, m3: i32) -> Result<f64, AngMomError> {
     is_unphysical(l1, l2, l3, m1, m2, -m3)?;
 
     Ok(
@@ -286,26 +286,26 @@ pub fn gaunt(l1: u32, l2: u32, l3: u32, m1: i32, m2: i32, m3: i32) -> Result<f64
 }
 
 /// Returns the value of the triangle coefficient \Delta(abc) used in the computation of 6j and 9j symbols.
-fn delta(a: u32, b: u32, c: u32) -> Result<f64, Error> {
+fn delta(a: u32, b: u32, c: u32) -> Result<f64, AngMomError> {
     if a + c >= b && a + b >= c && b + c >= a {
         Ok(
             ratio_of_factorials(&mut [a + c - b, a + b - c, c + b - a], &mut [a + c + b + 1])
                 .sqrt(),
         )
     } else {
-        Err(Error::NotTriangular)
+        Err(AngMomError::NotTriangular)
     }
 }
 
 /// Returns the value of the \nabla(abc) triangle coefficient used in the computation of 9j symbols.
-fn nabla(a: u32, b: u32, c: u32) -> Result<f64, Error> {
+fn nabla(a: u32, b: u32, c: u32) -> Result<f64, AngMomError> {
     if a + c >= b && a + b >= c && b + c >= a {
         Ok(
             ratio_of_factorials(&mut [a + c - b, a + b - c, a + b + c + 1], &mut [b + c - a])
                 .sqrt(),
         )
     } else {
-        Err(Error::NotTriangular)
+        Err(AngMomError::NotTriangular)
     }
 }
 
@@ -365,7 +365,14 @@ pub fn wigner_d(
 /// the given integer inputs.
 /// The first three inputs are the angular momentum quantum numbers,
 /// while the last three are their projections.
-pub fn clebsch_gordan(j1: u32, j2: u32, j3: u32, m1: i32, m2: i32, m3: i32) -> Result<f64, Error> {
+pub fn clebsch_gordan(
+    j1: u32,
+    j2: u32,
+    j3: u32,
+    m1: i32,
+    m2: i32,
+    m3: i32,
+) -> Result<f64, AngMomError> {
     //This code is simply ported Fortran code,
     //as such it is not completely idiomatic rust.
 
@@ -474,26 +481,26 @@ fn phase(x: u32) -> f64 {
 }
 
 /// Returns whether the given quantum numbers represent something unphysical in a CG-coeff or 3j symbol.
-fn is_unphysical(j1: u32, j2: u32, j3: u32, m1: i32, m2: i32, m3: i32) -> Result<(), Error> {
+fn is_unphysical(j1: u32, j2: u32, j3: u32, m1: i32, m2: i32, m3: i32) -> Result<(), AngMomError> {
     if m1.unsigned_abs() > j1 && m2.unsigned_abs() > j2 && m3.unsigned_abs() > j3 {
-        Err(Error::TooLargeM)
+        Err(AngMomError::TooLargeM)
     } else if !is_triad(j1, j2, j3) {
-        Err(Error::NotTriangular)
+        Err(AngMomError::NotTriangular)
     } else if m1 + m2 != m3 {
-        Err(Error::IncorrectMSum)
+        Err(AngMomError::IncorrectMSum)
     } else {
         Ok(())
     }
 }
 
 #[derive(Debug)]
-pub enum Error {
+pub enum AngMomError {
     TooLargeM,
     NotTriangular,
     IncorrectMSum,
 }
 
-impl std::fmt::Display for Error {
+impl std::fmt::Display for AngMomError {
     fn fmt(&self, f: &mut std::fmt::Formatter) -> std::fmt::Result {
         match self {
             Self::TooLargeM => write!(f, "|m| is larger than its corresponding j"),
@@ -505,7 +512,7 @@ impl std::fmt::Display for Error {
     }
 }
 
-impl std::error::Error for Error {}
+impl std::error::Error for AngMomError {}
 
 /// Takes in two lists of integers that represent a ratio of two sets of factorials
 /// and returns the value of that ratio as an `f64`.
